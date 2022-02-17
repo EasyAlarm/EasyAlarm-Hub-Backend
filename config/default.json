@@ -1,0 +1,3 @@
+{
+    "mongoURI": "mongodb://admin:raspberry@localhost/"
+}
