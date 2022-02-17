@@ -1,3 +1,4 @@
 {
-    "mongoURI": "mongodb://admin:raspberry@localhost/"
+    "mongoURI": "mongodb://admin:raspberry@localhost/",
+    "jwtSecret": "secretToken"
 }
