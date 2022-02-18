@@ -4,6 +4,8 @@ const jwt = require('jsonwebtoken');
 const config = require('config');
 
 const User = require('../models/userModel');
+const catchAsync = require("../utils/catchAsync");
+const ApiError = require("../utils/apiError");
 
 const createSendToken = (user, res) =>
 {
@@ -26,84 +28,60 @@ const createSendToken = (user, res) =>
 };
 
 
-exports.registerUser = async (req, res) =>
+exports.registerUser = catchAsync(async (req, res, next) =>
 {
-    try
+    const errors = validationResult(req);
+
+    if (!errors.isEmpty())
     {
-        const errors = validationResult(req);
-
-        if (!errors.isEmpty())
-        {
-            return res.status(400).json({ errors: errors.array() });
-        }
-
-        let hasAlreadyRegistered = await User.count() > 0;
-
-        if (hasAlreadyRegistered)
-            return res.status(400).json({ errors: [{ msg: "You have already registered an account" }] });
-
-        let user = await User.findOne({ username: req.body.username });
-
-        if (user)
-        {
-            return res.status(400).json({ errors: [{ msg: "User already exists" }] });
-        }
-
-        user = new User
-            ({
-                username: req.body.username,
-                password: req.body.password
-            });
-
-        const salt = await bcrypt.genSalt(10);
-        user.password = await bcrypt.hash(req.body.password, salt);
-
-        await user.save();
-
-        createSendToken(user, res);
-    }
-    catch (err)
-    {
-        console.error(err.message);
-        res.status(500).send('Server error');
+        return next(new ApiError(errors.array()[0].msg, 400));
     }
 
-};
+    let hasAlreadyRegistered = await User.count() > 0;
 
-exports.loginUser = async (req, res, next) =>
+    if (hasAlreadyRegistered)
+        return next(new ApiError("You have already registered an account", 400));
+
+    let user = new User
+        ({
+            username: req.body.username,
+            password: req.body.password
+        });
+
+    const salt = await bcrypt.genSalt(10);
+    user.password = await bcrypt.hash(req.body.password, salt);
+
+    await user.save();
+
+    createSendToken(user, res);
+
+});
+
+exports.loginUser = catchAsync(async (req, res, next) =>
 {
-    try
+    const errors = validationResult(req);
+
+    if (!errors.isEmpty())
     {
-        const errors = validationResult(req);
-
-        if (!errors.isEmpty())
-        {
-            return res.status(400).json({ errors: errors.array() });
-        }
-
-        let user = await User.findOne({ username: req.body.username });
-
-        if (!user)
-        {
-            return res.status(400).json({ errors: [{ msg: 'Invalid credentials' }] });
-        }
-
-        const isCorrectPassword = await bcrypt.compare(req.body.password, user.password);
-
-        if (!isCorrectPassword)
-        {
-            return res.status(400).json({ errors: [{ msg: 'Invalid credentials' }] });
-        }
-
-        createSendToken(user, res);
-    }
-    catch (err)
-    {
-        console.error(err.message);
-        res.status(500).send('Server error');
+        return next(new ApiError(errors.array()[0].msg, 400));
     }
 
-};
+    let user = await User.findOne({ username: req.body.username });
+
+    if (!user)
+    {
+        return next(new ApiError("Invalid credentials", 400));
+    }
+
+    const isCorrectPassword = await bcrypt.compare(req.body.password, user.password);
+
+    if (!isCorrectPassword)
+    {
+        return next(new ApiError("Invalid credentials", 400));
+    }
+
+    createSendToken(user, res);
+});
 
 exports.validate = (method) =>
 {

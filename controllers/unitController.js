@@ -1,7 +1,9 @@
 const config = require('config');
 
 const Unit = require('../models/unitModel');
+const ApiError = require('../utils/apiError');
 const { validateCheckCharacter } = require('../utils/luhnValidator');
+const catchAsync = require('./../utils/catchAsync');
 
 const getUnitType = (deviceID) => 
 {
@@ -17,115 +19,79 @@ const getUnitType = (deviceID) =>
     return dict[firstChar];
 };
 
-exports.addUnit = async (req, res) =>
+exports.addUnit = catchAsync(async (req, res, next) =>
 {
-    try
+    if (!validateCheckCharacter(req.body.unitID))
     {
-        if (!validateCheckCharacter(req.body.unitID))
+        return next(new ApiError('Invalid unit ID', 400));
+    }
+
+    let unit = await Unit.findOne({ unitID: req.body.unitID });
+
+    if (unit)
+    {
+        return next(new ApiError('Unit already exists', 400));
+    }
+
+    unit = new Unit
+        ({
+            unitType: getUnitType(req.body.unitID),
+            friendlyName: req.body.friendlyName,
+            unitID: req.body.unitID
+        });
+
+
+    await unit.save();
+
+    return res.status(201).send('Unit added');
+});
+
+exports.updateUnit = catchAsync(async (req, res, next) =>
+{
+    const filter = { unitID: req.params.unitID };
+    const update = { friendlyName: req.body.friendlyName };
+
+    const unit = await Unit.findOneAndUpdate(filter, update,
         {
-            return res.status(400).send("Invalid device id");
-        }
+            new: true,
+            runValidators: true
+        });
 
-        let unit = await Unit.findOne({ unitID: req.body.unitID });
+    if (!unit)
+        return next(new ApiError('Unit not found', 404));
 
-        if (unit)
-        {
-            return res.status(400).send('Unit already exists');
-        }
+    return res.status(201).send('success');
+});
 
-        unit = new Unit
-            ({
-                unitType: getUnitType(req.body.unitID),
-                friendlyName: req.body.friendlyName,
-                unitID: req.body.unitID
-            });
-
-
-        await unit.save();
-
-        return res.status(201).send('Unit added');
-    }
-    catch (err)
-    {
-        console.error(err.message);
-        res.status(500).send('Server error');
-    }
-};
-
-exports.updateUnit = async (req, res) =>
+exports.deleteUnit = catchAsync(async (req, res, next) =>
 {
-    try 
-    {
-        const filter = { unitID: req.params.unitID };
-        const update = { friendlyName: req.body.friendlyName };
+    const filter = { unitID: req.params.unitID };
 
-        await Unit.findOneAndUpdate(filter, update,
-            {
-                new: true,
-                runValidators: true
-            });
+    const unit = await Unit.findOneAndDelete(filter);
 
-        return res.status(201).send('Unit updated');
-    }
-    catch (err)
-    {
-        console.error(err.message);
-        res.status(500).send('Server error');
-    }
-};
+    if (!unit)
+        return next(new ApiError('Unit not found', 404));
 
-exports.deleteUnit = async (req, res) =>
+    res.status(204).send("success");
+});
+
+exports.getUnit = catchAsync(async (req, res, next) =>
 {
-    try
-    {
-        const filter = { unitID: req.params.unitID };
+    const filter = { unitID: req.params.unitID };
 
-        const doc = await Unit.findOneAndDelete(filter);
+    const unit = await Unit.findOne(filter);
 
-        if (!doc)
-        {
-            //404 error
-        }
+    if (!unit)
+        return next(new ApiError('Unit not found', 404));
 
-        res.status(204).send("Deleted");
-    }
-    catch (err)
-    {
-        console.error(err.message);
-        res.status(500).send('Server error');
-    }
-};
+    res.status(200).send({ data: unit });
+});
 
-exports.getUnit = async (req, res) =>
+exports.getAllUnits = catchAsync(async (req, res, next) =>
 {
-    try
-    {
-        const filter = { unitID: req.params.unitID };
+    const filter = {};
 
-        const doc = await Unit.findOne(filter);
+    const units = await Unit.find(filter);
 
-        res.status(200).send({ data: doc });
-    }
-    catch (err)
-    {
-        console.error(err.message);
-        res.status(500).send('Server error');
-    }
-};
-
-exports.getAllUnits = async (req, res) =>
-{
-    try
-    {
-        const filter = {};
-
-        const doc = await Unit.find(filter);
-
-        res.status(200).send({ data: doc });
-    }
-    catch (err)
-    {
-        console.error(err.message);
-        res.status(500).send('Server error');
-    }
-};
+    res.status(200).send({ data: units });
+});
