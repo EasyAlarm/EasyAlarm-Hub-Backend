@@ -1,7 +1,7 @@
 const express = require('express');
 
 const userRouter = require('./routes/userRoutes');
-
+const unitRouter = require('./routes/unitRoutes');
 const { protect } = require('./middleware/auth');
 
 const app = express();
@@ -12,6 +12,7 @@ app.use(express.json({ extended: false }));
 
 //Routes
 app.use('/api/user', userRouter);
+app.use('/api/unit', unitRouter);
 
 app.get('/', protect, (req, res) => res.send('Auth route'));
 
