@@ -21,7 +21,7 @@ exports.addUnit = async (req, res) =>
 {
     try
     {
-        if(!validateCheckCharacter(req.body.unitID))
+        if (!validateCheckCharacter(req.body.unitID))
         {
             return res.status(400).send("Invalid device id");
         }
@@ -54,20 +54,78 @@ exports.addUnit = async (req, res) =>
 
 exports.updateUnit = async (req, res) =>
 {
+    try 
+    {
+        const filter = { unitID: req.params.unitID };
+        const update = { friendlyName: req.body.friendlyName };
 
+        await Unit.findOneAndUpdate(filter, update,
+            {
+                new: true,
+                runValidators: true
+            });
+
+        return res.status(201).send('Unit updated');
+    }
+    catch (err)
+    {
+        console.error(err.message);
+        res.status(500).send('Server error');
+    }
 };
 
 exports.deleteUnit = async (req, res) =>
 {
+    try
+    {
+        const filter = { unitID: req.params.unitID };
 
+        const doc = await Unit.findOneAndDelete(filter);
+
+        if (!doc)
+        {
+            //404 error
+        }
+
+        res.status(204).send("Deleted");
+    }
+    catch (err)
+    {
+        console.error(err.message);
+        res.status(500).send('Server error');
+    }
 };
 
 exports.getUnit = async (req, res) =>
 {
+    try
+    {
+        const filter = { unitID: req.params.unitID };
 
+        const doc = await Unit.findOne(filter);
+
+        res.status(200).send({ data: doc });
+    }
+    catch (err)
+    {
+        console.error(err.message);
+        res.status(500).send('Server error');
+    }
 };
 
 exports.getAllUnits = async (req, res) =>
 {
+    try
+    {
+        const filter = {};
 
+        const doc = await Unit.find(filter);
+
+        res.status(200).send({ data: doc });
+    }
+    catch (err)
+    {
+        console.error(err.message);
+        res.status(500).send('Server error');
+    }
 };
