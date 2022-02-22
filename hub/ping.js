@@ -50,7 +50,8 @@ module.exports = class Ping
 
             if (this.#failedPingCounter >= this.#failedPingThreshold)
             {
-                this.#unitManager.emit('offline', this.#unit);
+                console.log("offline");
+                this.#unitManager.events.emit('offline', this.#unit);
             }
         }
     }

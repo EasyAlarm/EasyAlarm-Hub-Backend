@@ -1,19 +1,24 @@
-const { EventEmitter } = require("events");
-//const serialHandler = require("./serialHandler");
+const EventEmitter = require("events");
+const serialHandler = require("./serialHandler");
 const UnitMongoose = require('../models/unitModel');
 const Unit = require('./unit');
 const Ping = require('./ping');
 
-module.exports = class UnitMonitor extends EventEmitter
+module.exports = class UnitMonitor 
 {
     #units = [];
     #pingPool = [];
+    events = null;
 
     constructor()
     {
-        super();
+        this.monitorSerial = this.monitorSerial.bind(this);
+
+        this.events = new EventEmitter();
+
         this.loadUnits();
-        //serialHandler.init(this.monitorSerial);
+
+        serialHandler.init(this.monitorSerial);
     }
 
     fire(unit)
@@ -43,21 +48,24 @@ module.exports = class UnitMonitor extends EventEmitter
 
     monitorSerial(serialData)
     {
-        let id = 345;
-        let action;
+        console.log(serialData);
+
+        let deviceID = serialData[0];
+        let payload = serialData[1];
+        let content = serialData[2];
 
         for (let unit of this.#units)
         {
-            if (unit.id === id)
-            {
-                this.emit("trigger", { unit });
-                break;
-            }
+            console.log("emitting");
+            console.log(payload);
+            this.events.emit(payload, { unit });
+            break;
         }
     };
 
     async loadUnits()
     {
+        console.log("loading units");
         try
         {
             const filter = {};
@@ -68,9 +76,8 @@ module.exports = class UnitMonitor extends EventEmitter
             {
                 let unit = new Unit(unitMongoose.unitID, unitMongoose.unitType, unitMongoose.nodeAddress);
 
-
                 this.#units.push(unit);
-                this.#pingPool.push(new Ping(unit, this).start());
+                //this.#pingPool.push(new Ping(unit, this).start());
             });
 
         }
@@ -78,6 +85,7 @@ module.exports = class UnitMonitor extends EventEmitter
         {
             console.log(error);
         }
+
     };
 
     getUnits()
