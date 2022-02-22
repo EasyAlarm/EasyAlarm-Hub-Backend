@@ -21,6 +21,12 @@ const UnitSchema = new mongoose.Schema
             type: String,
             required: true,
             length: 9
+        },
+        nodeAddress:
+        {
+            type: String,
+            required: true,
+            length: 5
         }
     });
 
