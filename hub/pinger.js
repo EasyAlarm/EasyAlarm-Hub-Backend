@@ -1,11 +1,10 @@
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 
-module.exports = class Ping
+module.exports = class Pinger
 {
     #unit = null;
     #unitManager = null;
 
-    #hasReceivedPong = false;
     #failedPingCounter = 0;
     #failedPingThreshold = 3;
     #delay = 3;
@@ -17,11 +16,6 @@ module.exports = class Ping
         this.#unitManager = unitManager;
     }
 
-    setHasReceivedPong(value)
-    {
-        this.#hasReceivedPong = true;
-    }
-
     getUnit()
     {
         return this.#unit;
@@ -29,6 +23,7 @@ module.exports = class Ping
 
     reset()
     {
+        this.setHasReceivedPong = false;
         this.#failedPingCounter = 0;
     }
 
@@ -40,17 +35,10 @@ module.exports = class Ping
 
             await sleep(1000 * this.#delay);
 
-            if (this.#hasReceivedPong)
-            {
-                this.reset();
-                continue;
-            }
-
             this.#failedPingCounter++;
 
             if (this.#failedPingCounter >= this.#failedPingThreshold)
             {
-                console.log("offline");
                 this.#unitManager.events.emit('offline', this.#unit);
             }
         }

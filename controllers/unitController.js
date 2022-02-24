@@ -37,7 +37,8 @@ exports.addUnit = catchAsync(async (req, res, next) =>
         ({
             unitType: getUnitType(req.body.unitID),
             friendlyName: req.body.friendlyName,
-            unitID: req.body.unitID
+            unitID: req.body.unitID,
+            nodeAddress: "01"
         });
 
 

@@ -2,12 +2,13 @@ const EventEmitter = require("events");
 const serialHandler = require("./serialHandler");
 const UnitMongoose = require('../models/unitModel');
 const Unit = require('./unit');
-const Ping = require('./ping');
+const Pinger = require('./pinger');
+const PayloadType = require("./payloadType");
 
 module.exports = class UnitMonitor 
 {
     #units = [];
-    #pingPool = [];
+    #pingersPool = [];
     events = null;
 
     constructor()
@@ -34,32 +35,34 @@ module.exports = class UnitMonitor
     ping(unit)
     {
         console.log("pinging unit", unit.id);
-        //serialHandler.write(`${unit.nodeAddress}!{}!!`);
+        serialHandler.write(`${PayloadType.PING}!${unit.nodeAddress}!!`);
     }
 
     confirmPong(unit)
     {
-        this.#pingPool.foreach(ping =>
+
+        this.#pingersPool.forEach(pinger =>
         {
-            if (ping.getUnit().id === unit.id)
-                ping.setHasReceivedPong(true);
+            if (pinger.getUnit().id === unit.id)
+            {
+                pinger.reset();
+            }
         });
     }
 
     monitorSerial(serialData)
     {
-        console.log(serialData);
-
         let deviceID = serialData[0];
         let payload = serialData[1];
         let content = serialData[2];
 
         for (let unit of this.#units)
         {
-            console.log("emitting");
-            console.log(payload);
-            this.events.emit(payload, { unit });
-            break;
+            if (unit.id === deviceID)
+            {
+                this.events.emit(payload, unit);
+                break;
+            }
         }
     };
 
@@ -77,7 +80,9 @@ module.exports = class UnitMonitor
                 let unit = new Unit(unitMongoose.unitID, unitMongoose.unitType, unitMongoose.nodeAddress);
 
                 this.#units.push(unit);
-                //this.#pingPool.push(new Ping(unit, this).start());
+                let pinger = new Pinger(unit, this);
+                pinger.start();
+                this.#pingersPool.push(pinger);
             });
 
         }
@@ -85,6 +90,7 @@ module.exports = class UnitMonitor
         {
             console.log(error);
         }
+
 
     };
 
