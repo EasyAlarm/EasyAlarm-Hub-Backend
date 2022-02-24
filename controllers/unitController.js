@@ -4,6 +4,7 @@ const Unit = require('../models/unitModel');
 const ApiError = require('../utils/apiError');
 const { validateCheckCharacter } = require('../utils/luhnValidator');
 const catchAsync = require('./../utils/catchAsync');
+const hubCore = require('../hub/hubCore');
 
 const getUnitType = (deviceID) => 
 {
@@ -31,6 +32,16 @@ exports.addUnit = catchAsync(async (req, res, next) =>
     if (unit)
     {
         return next(new ApiError('Unit already exists', 400));
+    }
+
+    console.log("please press the pair button on your unit");
+
+    let success = await hubCore.pair(req.body.unitID);
+
+
+    if (!success)
+    {
+        return next(new ApiError('Unable to pair unit', 400));
     }
 
     unit = new Unit

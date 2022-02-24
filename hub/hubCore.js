@@ -1,6 +1,7 @@
 const UnitManager = require('./unitManager');
 const AlarmStateType = require('./alarmStateType');
 const PayloadType = require('./payloadType');
+const sleep = require('../utils/sleep');
 
 let alarmState = AlarmStateType.DISARMED;
 
@@ -38,6 +39,28 @@ const alarm = () =>
     });
 };
 
+const pair = async (unitID) =>
+{
+    console.log(`Waiting for pair request from ${unitID}`);
+
+    unitManager.events.on(PayloadType.PAIR, (incomingUnitID) =>
+    {
+        if (unitID === incomingUnitID)
+        {
+            return true;
+        }
+    });
+
+    for (let i = 0; i < 30; i++)
+    {
+        await sleep(1000);
+    }
+
+    unitManager.events.off(PayloadType.PAIR);
+
+    return false;
+};
+
 unitManager.events.on(PayloadType.TRIGGERED, (unit) =>
 {
     if (alarmState == AlarmStateType.ARMED)
@@ -47,15 +70,13 @@ unitManager.events.on(PayloadType.TRIGGERED, (unit) =>
     }
 });
 
+
+
 unitManager.events.on(PayloadType.PONG, (unit) =>
 {
     unitManager.confirmPong(unit);
 });
 
-unitManager.events.on(PayloadType.PAIR, (unit) =>
-{
-    console.log("unit wants to pair");
-});
 
 unitManager.events.on('offline', (unit) =>
 {
@@ -65,7 +86,7 @@ unitManager.events.on('offline', (unit) =>
 
 module.exports =
 {
-    init, arm, disarm, alarm
+    init, arm, disarm, alarm, pair
 };
 
 

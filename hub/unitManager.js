@@ -34,7 +34,6 @@ module.exports = class UnitMonitor
 
     ping(unit)
     {
-        console.log("pinging unit", unit.id);
         serialHandler.write(`${PayloadType.PING}!${unit.nodeAddress}!!`);
     }
 
@@ -55,6 +54,11 @@ module.exports = class UnitMonitor
         let deviceID = serialData[0];
         let payload = serialData[1];
         let content = serialData[2];
+
+        if (payload == PayloadType.PAIR)
+        {
+            this.events.emit(payload, deviceID);
+        }
 
         for (let unit of this.#units)
         {
