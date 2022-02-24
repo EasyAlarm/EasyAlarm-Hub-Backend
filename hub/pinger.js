@@ -1,4 +1,4 @@
-const sleep = ms => new Promise(r => setTimeout(r, ms));
+const sleep = require("../utils/sleep");
 
 module.exports = class Pinger
 {
