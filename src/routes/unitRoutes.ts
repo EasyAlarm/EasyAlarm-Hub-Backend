@@ -1,5 +1,5 @@
 import Router from 'express';
-import { createUnitSchema } from '../schema/unitSchema';
+import { createUnitSchema, getUnitSchema } from '../schemas/unitSchema';
 import validateResource from '../middleware/validateResource';
 import { addUnitHandler, getUnitHandler, getAllUnitsHandler, deleteUnitHandler, updateUnitHandler } from '../controllers/unitController';
 
@@ -8,12 +8,12 @@ const router = Router();
 router
     .route('/')
     .get(getAllUnitsHandler)
-    .post(addUnitHandler);
+    .post(validateResource(createUnitSchema), addUnitHandler);
 
 router
     .route('/:unitID')
-    .get(getUnitHandler)
-    .patch(updateUnitHandler)
-    .delete(deleteUnitHandler);
+    .get(validateResource(getUnitSchema), getUnitHandler)
+    .patch(validateResource(createUnitSchema), updateUnitHandler)
+    .delete(validateResource(getUnitSchema), deleteUnitHandler);
 
 export default router;

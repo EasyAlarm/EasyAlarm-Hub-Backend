@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import { UserDocument } from '../models/userModel';
-import { CreateUserInput } from '../schema/userSchema';
+import { CreateUserInput, LoginUserInput } from '../schemas/userSchema';
 import { createUser, hasAlreadyRegistered, getUser, isValidPassword } from '../services/userService';
 import ApiError from '../utils/apiError';
 import catchAsync from '../utils/catchAsync';
@@ -26,7 +26,7 @@ export const registerUserHandler = catchAsync(async (req: Request<{}, {}, Create
 
 });
 
-export const loginUserHandler = catchAsync(async (req: Request<{}, {}, CreateUserInput['body']>, res: Response, next: NextFunction) =>
+export const loginUserHandler = catchAsync(async (req: Request<{}, {}, LoginUserInput['body']>, res: Response, next: NextFunction) =>
 {
     const userDocument = await getUser(req.body.username);
 
