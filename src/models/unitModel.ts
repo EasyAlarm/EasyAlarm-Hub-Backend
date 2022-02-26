@@ -1,4 +1,10 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
+
+export interface UnitDocument extends mongoose.Document
+{
+    friendlyName: string;
+    unitID: string;
+}
 
 const UnitSchema = new mongoose.Schema
     ({
@@ -20,7 +26,7 @@ const UnitSchema = new mongoose.Schema
         {
             type: String,
             required: true,
-            length: 9
+            length: 6
         },
         nodeAddress:
         {
@@ -31,5 +37,5 @@ const UnitSchema = new mongoose.Schema
     });
 
 
-const Unit = mongoose.model('Unit', UnitSchema);
-module.exports = Unit;
+const UnitModel = mongoose.model('unit', UnitSchema);
+export default UnitModel;

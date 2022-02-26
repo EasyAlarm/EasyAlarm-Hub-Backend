@@ -5,12 +5,12 @@ const numberOfValidInputCharacters = () =>
     return codePoints.length;
 };
 
-const codePointFromCharacter = (character) =>
+const codePointFromCharacter = (character: string) =>
 {
     return codePoints.indexOf(character);
 };
 
-exports.validateCheckCharacter = (input) =>
+export default function validateCheckCharacter(input: string): boolean
 {
     let factor = 1;
     let sum = 0;
@@ -33,4 +33,4 @@ exports.validateCheckCharacter = (input) =>
     }
     let remainder = sum % n;
     return (remainder == 0);
-};
+}
