@@ -12,6 +12,8 @@ export const addUnitHandler = catchAsync(async (req: Request<{}, {}, CreateUnitI
         return next(new ApiError("Unit already exists", 400));
     }
 
+    await createUnit(req.body);
+
     //pairing code
 
 

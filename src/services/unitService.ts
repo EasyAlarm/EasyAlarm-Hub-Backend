@@ -24,6 +24,7 @@ export async function createUnit(input: DocumentDefinition<UnitDocument>)
             unitType: getUnitType(input.unitID),
             friendlyName: input.friendlyName,
             unitID: input.unitID,
+            nodeAddress: "01"
         });
 
         return await unit.save();

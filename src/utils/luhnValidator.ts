@@ -25,12 +25,12 @@ export default function validateCheckCharacter(input: string): boolean
         let addend = factor * codePoint;
 
         // Alternate the "factor" that each "codePoint" is multiplied by
-        factor = (factor == 2) ? 1 : 2;
+        factor = (factor === 2) ? 1 : 2;
 
         // Sum the digits of the "addend" as expressed in base "n"
         addend = (Math.floor(addend / n)) + (addend % n);
         sum += addend;
     }
     let remainder = sum % n;
-    return (remainder == 0);
+    return (remainder === 0);
 }
