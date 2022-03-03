@@ -1,2 +1,8 @@
 node_modules/
 tests/
+
+# Ignore built ts files
+dist/**/*
+
+# API keys and secrets
+.env
