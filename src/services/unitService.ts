@@ -1,5 +1,7 @@
 import { DocumentDefinition } from 'mongoose';
+import Pairer, { PairingState } from '../hub/pairer';
 import UnitModel, { UnitDocument } from '../models/unitModel';
+import getNextNodeAddr from '../utils/getNextNodeAddr';
 
 const getUnitType = (unitID: string): any =>
 {
@@ -15,19 +17,30 @@ const getUnitType = (unitID: string): any =>
     return dict[firstChar];
 };
 
-
 export async function createUnit(input: DocumentDefinition<UnitDocument>)
 {
     try
     {
-        let unit: UnitDocument = new UnitModel({
+        const pairer: Pairer = new Pairer(input.unitID);
+
+        const state: PairingState = await pairer.waitForPairingRequest();
+
+        if (state === PairingState.FAILED)
+            return false;
+
+        const nodeAddr = await getNextNodeAddr();
+
+
+        const unit: UnitDocument = new UnitModel({
             unitType: getUnitType(input.unitID),
             friendlyName: input.friendlyName,
             unitID: input.unitID,
-            nodeAddress: "01"
+            nodeAddress: nodeAddr
         });
 
-        return await unit.save();
+        await unit.save();
+
+        return true;
     }
     catch (error: any)
     {

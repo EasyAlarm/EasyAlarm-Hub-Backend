@@ -5,7 +5,9 @@ import Unit from './unit';
 import serialHandler = require('./serialHandler');
 import Pinger from './pinger';
 import PingerManager from './pingerManager';
-import { any } from 'zod';
+import { any, unknown } from 'zod';
+import sleep from '../utils/sleep';
+import UnitCommander from './unitCommander';
 
 export default class UnitManager
 {
@@ -40,7 +42,7 @@ export default class UnitManager
         console.log("UnitManager initialized");
     }
 
-    public GetPingerManager(): PingerManager
+    public getPingerManager(): PingerManager
     {
         return this.pingerManager;
     }
@@ -61,9 +63,13 @@ export default class UnitManager
         let payload: PayloadType = PayloadType[serialData[1] as keyof typeof PayloadType];
         let content: string = serialData[2];
 
-        if (payload === PayloadType.PAIR)
+        console.log(`Received serial data: ${deviceID} ${PayloadType[payload]} ${String(PayloadType.PAIR)}`);
+
+        if (PayloadType[payload] == String(PayloadType.PAIR))
         {
-            this.events.emit("offline", deviceID);
+            console.log("received pair payload");
+            this.events.emit(PayloadType[payload], deviceID);
+            return;
         }
 
         this.units.forEach(unit => 

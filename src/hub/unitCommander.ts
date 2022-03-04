@@ -4,21 +4,11 @@ import PayloadType from "./payloadType";
 
 export default class UnitCommander
 {
-
-    public static fire(unit: Unit): void
+    public static send(nodeAddress: string | Unit, payload: PayloadType, content?: string): void
     {
+        if (nodeAddress instanceof Unit)
+            nodeAddress = nodeAddress.getNodeAddress();
 
+        serialHandler.write(`${payload}!${nodeAddress}!${content || ""}`);
     }
-
-    public static cease(unit: Unit): void
-    {
-
-    }
-
-    public static ping(unit: Unit): void
-    {
-        serialHandler.write(`${PayloadType.PING}!${unit.getNodeAddress()}!!`);
-    }
-
-
 }

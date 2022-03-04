@@ -8,20 +8,12 @@ export default class HubCore
     private static alarmState: AlarmStateType;
     private static unitManager: UnitManager;
 
-    public arm(): void
+    public static setState(state: AlarmStateType): void
     {
-        AlarmStateType.ARMED;
+        HubCore.alarmState = state;
     }
 
-    public disarm(): void
-    {
-        AlarmStateType.DISARMED;
-    }
-
-    public alamar(): void
-    {
-        AlarmStateType.ALARM;
-    }
+    private constructor() { };
 
     public static async init(): Promise<void>
     {
@@ -36,6 +28,11 @@ export default class HubCore
         console.log("HubCore initialized");
     }
 
+    public static GetUnitManager(): UnitManager
+    {
+        return this.unitManager;
+    }
+
     private static eventHandler(): void
     {
         UnitManager.getEvents().on("offline", (unit: Unit) =>
@@ -45,7 +42,7 @@ export default class HubCore
 
         UnitManager.getEvents().on(String(PayloadType.PONG), (unit: Unit) =>
         {
-            this.unitManager.GetPingerManager().confirmPong(unit);
+            this.unitManager.getPingerManager().confirmPong(unit);
         });
     }
 

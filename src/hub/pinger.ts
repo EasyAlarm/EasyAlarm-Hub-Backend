@@ -2,6 +2,7 @@ import Unit from "./unit";
 import sleep from "../utils/sleep";
 import UnitManager from "./unitManager";
 import UnitCommander from "./unitCommander";
+import PayloadType from "./payloadType";
 
 export default class Pinger
 {
@@ -36,7 +37,7 @@ export default class Pinger
     {
         while (this.shouldPing)
         {
-            UnitCommander.ping(this.unit);
+            UnitCommander.send(this.unit, PayloadType.PING);
 
             await sleep(1000 * this.interval);
 

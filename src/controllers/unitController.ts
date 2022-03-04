@@ -12,12 +12,13 @@ export const addUnitHandler = catchAsync(async (req: Request<{}, {}, CreateUnitI
         return next(new ApiError("Unit already exists", 400));
     }
 
-    await createUnit(req.body);
+    if (!await createUnit(req.body))
+    {
+        return next(new ApiError("Something went wrong", 400));
+    }
 
-    //pairing code
 
-
-    return res.status(201).send('Under construction');
+    return res.status(201).send('Unit added');
 });
 
 export const getUnitHandler = catchAsync(async (req: Request<{}, {}, GetUnitInput['body']>, res: Response, next: NextFunction) =>
