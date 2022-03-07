@@ -10,8 +10,6 @@ export default class Pinger
 
     private failedPingCounter: number = 0;
     private failedPingThreshold: number = 3;
-    private interval: number = 3;
-    private shouldPing: boolean = true;
 
     constructor(unit: Unit)
     {
@@ -28,25 +26,15 @@ export default class Pinger
         this.failedPingCounter = 0;
     }
 
-    public stop(): void
+    public ping(): void
     {
-        this.shouldPing = false;
-    }
+        UnitCommander.send(this.unit, PayloadType.PING);
 
-    public async init(): Promise<void>
-    {
-        while (this.shouldPing)
+        this.failedPingCounter++;
+
+        if (this.failedPingCounter >= this.failedPingThreshold)
         {
-            UnitCommander.send(this.unit, PayloadType.PING);
-
-            await sleep(1000 * this.interval);
-
-            this.failedPingCounter++;
-
-            if (this.failedPingCounter >= this.failedPingThreshold)
-            {
-                UnitManager.getEvents().emit("offline", this.unit);
-            }
+            UnitManager.getEvents().emit("offline", this.unit);
         }
     }
 }

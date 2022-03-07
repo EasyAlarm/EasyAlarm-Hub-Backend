@@ -1,28 +1,39 @@
+import sleep from "../utils/sleep";
 import Pinger from "./pinger";
 import Unit from "./unit";
 
 export default class PingerManager
 {
     private pingers: Array<Pinger>;
+    private shouldPing: boolean = true;
+    private globalInterval: number = 3000;
+    private betweenPingsInterval: number = 100;
 
     constructor()
     {
         this.pingers = [];
     }
 
-    public init(units: Array<Unit>): void
+    public async init(units: Array<Unit>)
     {
         this.clearPingers();
 
         units.forEach((unitModel: any) =>
         {
             let pinger = new Pinger(unitModel);
-            pinger.init();
-
             this.pingers.push(pinger);
         });
 
-        console.log("PingerManager initialized");
+        while (this.shouldPing)
+        {
+            for (let i = 0; i < this.pingers.length; i++)
+            {
+                this.pingers[i].ping();
+                await sleep(this.betweenPingsInterval);
+            }
+
+            await sleep(this.globalInterval);
+        }
     }
 
     public confirmPong(unit: Unit): void
@@ -38,14 +49,6 @@ export default class PingerManager
 
     public clearPingers(): void
     {
-        if (this.pingers.length > 0)
-            return;
-
-        this.pingers.forEach(pinger =>
-        {
-            pinger.stop();
-        });
-
         this.pingers = [];
     }
 
