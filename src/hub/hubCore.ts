@@ -37,7 +37,7 @@ export default class HubCore
     {
         UnitManager.getEvents().on("offline", (unit: Unit) =>
         {
-            console.log(`Unit ${unit.getId()} is offline`);
+            //console.log(`Unit ${unit.getId()} is offline`);
         });
 
         UnitManager.getEvents().on(String(PayloadType.PONG), (unit: Unit) =>

@@ -10,7 +10,7 @@ const errorHandler = (err: ApiError, req: Request, res: Response, next: NextFunc
     }
 
     res.status(err.getStatusCode()).json({
-        errors: [{ msg: err.message }]
+        errors: [err.message]
     });
 };
 
