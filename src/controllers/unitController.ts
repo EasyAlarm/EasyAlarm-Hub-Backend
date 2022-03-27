@@ -21,9 +21,9 @@ export const addUnitHandler = catchAsync(async (req: Request<{}, {}, CreateUnitI
     return res.status(201).send('Unit added');
 });
 
-export const getUnitHandler = catchAsync(async (req: Request<{}, {}, GetUnitInput['body']>, res: Response, next: NextFunction) =>
+export const getUnitHandler = catchAsync(async (req: Request<GetUnitInput['params']>, res: Response, next: NextFunction) =>
 {
-    const unit = await getUnit(req.body.unitID);
+    const unit = await getUnit(req.params.unitID);
 
     if (!unit)
     {

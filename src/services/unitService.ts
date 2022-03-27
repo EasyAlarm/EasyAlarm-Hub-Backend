@@ -89,7 +89,7 @@ export async function updateUnit(unitID: string, unitFriendlyName: string): Prom
     try
     {
         const filter = { unitID };
-        const update = { unitFriendlyName };
+        const update = { friendlyName: unitFriendlyName };
         return await UnitModel.findOneAndUpdate(filter, update);
     }
     catch (error: any)

@@ -15,7 +15,7 @@ export const createUnitSchema = object({
 });
 
 export const getUnitSchema = object({
-    body: object({
+    params: object({
         unitID: string({
             required_error: "Unit ID is required"
         }).length(6, "Unit ID must be 6 characters long"),
