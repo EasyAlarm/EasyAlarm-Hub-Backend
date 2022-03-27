@@ -97,3 +97,17 @@ export async function updateUnit(unitID: string, unitFriendlyName: string): Prom
         throw new Error(error);
     }
 }
+
+export async function setUnitOnlineStatus(unitID: string, online: boolean): Promise<UnitDocument | null>
+{
+    try
+    {
+        const filter = { unitID };
+        const update = { online };
+        return await UnitModel.findOneAndUpdate(filter, update);
+    }
+    catch (error: any)
+    {
+        throw new Error(error);
+    }
+}

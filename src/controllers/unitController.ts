@@ -39,9 +39,9 @@ export const getAllUnitsHandler = catchAsync(async (req: Request, res: Response,
     return res.status(200).send({ data: units });
 });
 
-export const deleteUnitHandler = catchAsync(async (req: Request<{}, {}, DeleteUnitInput['body']>, res: Response, next: NextFunction) =>
+export const deleteUnitHandler = catchAsync(async (req: Request<DeleteUnitInput['params']>, res: Response, next: NextFunction) =>
 {
-    if (!await deleteUnit(req.body.unitID))
+    if (!await deleteUnit(req.params.unitID))
     {
         return next(new ApiError('Unit not found', 400));
     }
@@ -49,9 +49,9 @@ export const deleteUnitHandler = catchAsync(async (req: Request<{}, {}, DeleteUn
     return res.status(200).send('Unit deleted');
 });
 
-export const updateUnitHandler = catchAsync(async (req: Request<{}, {}, UpdateUnitInput['body']>, res: Response, next: NextFunction) =>
+export const updateUnitHandler = catchAsync(async (req: Request<UpdateUnitInput['params'], {}, UpdateUnitInput['body']>, res: Response, next: NextFunction) =>
 {
-    if (!await updateUnit(req.body.unitID, req.body.friendlyName))
+    if (!await updateUnit(req.params.unitID, req.body.friendlyName))
     {
         return next(new ApiError('Unit not found', 400));
     }

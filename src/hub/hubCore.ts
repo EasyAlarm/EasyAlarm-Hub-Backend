@@ -1,3 +1,4 @@
+import { setUnitOnlineStatus } from "../services/unitService";
 import AlarmStateType from "./alarmStateType";
 import PayloadType from "./payloadType";
 import Unit from "./unit";
@@ -37,12 +38,14 @@ export default class HubCore
     {
         UnitManager.getEvents().on("offline", (unit: Unit) =>
         {
-            //console.log(`Unit ${unit.getId()} is offline`);
+            console.log(`Unit ${unit.getId()} is offline`);
+            setUnitOnlineStatus(unit.getId(), false);
         });
 
         UnitManager.getEvents().on(String(PayloadType.PONG), (unit: Unit) =>
         {
             this.unitManager.getPingerManager().confirmPong(unit);
+            setUnitOnlineStatus(unit.getId(), true);
         });
     }
 

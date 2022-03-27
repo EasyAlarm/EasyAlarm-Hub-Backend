@@ -33,6 +33,11 @@ const UnitSchema = new mongoose.Schema
             type: String,
             required: true,
             length: 5
+        },
+        online:
+        {
+            type: Boolean,
+            default: true
         }
     });
 

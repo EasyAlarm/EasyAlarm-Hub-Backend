@@ -1,5 +1,5 @@
 import Router from 'express';
-import { createUnitSchema, getUnitSchema } from '../schemas/unitSchema';
+import { createUnitSchema, deleteUnitSchema, getUnitSchema, updateUnitSchema } from '../schemas/unitSchema';
 import validateResource from '../middleware/validateResource';
 import { addUnitHandler, getUnitHandler, getAllUnitsHandler, deleteUnitHandler, updateUnitHandler } from '../controllers/unitController';
 
@@ -13,7 +13,7 @@ router
 router
     .route('/:unitID')
     .get(validateResource(getUnitSchema), getUnitHandler)
-    .patch(validateResource(createUnitSchema), updateUnitHandler)
-    .delete(validateResource(getUnitSchema), deleteUnitHandler);
+    .patch(validateResource(updateUnitSchema), updateUnitHandler)
+    .delete(validateResource(deleteUnitSchema), deleteUnitHandler);
 
 export default router;
