@@ -14,7 +14,14 @@ const validate = (schema: AnyZodObject) => (req: Request, res: Response, next: N
     }
     catch (error: any)
     {
-        return res.status(400).json({errors: [{msg: error.errors}]});
+        const errors: Array<string> = [];
+        error.issues.forEach((errorObject: any) =>
+        {
+            errors.push(errorObject.message);
+        });
+
+
+        return res.status(400).json({ errors: errors });
     }
 };
 

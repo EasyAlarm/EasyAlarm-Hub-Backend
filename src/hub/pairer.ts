@@ -38,12 +38,14 @@ export default class Pairer
 
         while (true)
         {
+            counter++;
+
             await sleep(1000);
 
             if (this.state === PairingState.COMPLETE || this.state === PairingState.FAILED)
                 break;
 
-            if (this.state === PairingState.PAIRING || this.state === PairingState.IDLE)
+            if (this.state === PairingState.PAIRING)
                 continue;
 
             if (counter >= this.timeout)
@@ -52,7 +54,6 @@ export default class Pairer
                 break;
             }
 
-            counter++;
         }
 
         console.log("Pairing request timed out");

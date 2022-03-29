@@ -14,7 +14,7 @@ export const addUnitHandler = catchAsync(async (req: Request<{}, {}, CreateUnitI
 
     if (!await createUnit(req.body))
     {
-        return next(new ApiError("Something went wrong", 400));
+        return next(new ApiError("Pairing failed or timed out", 400));
     }
 
 
