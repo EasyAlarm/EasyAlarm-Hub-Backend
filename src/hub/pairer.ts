@@ -15,7 +15,7 @@ export enum PairingState
 export default class Pairer 
 {
     private unitID: string;
-    private readonly defaultNodeAddr: string = "01";
+    private readonly defaultNodeAddr: string = "1";
     private readonly timeout: number = 30;
 
     private state: PairingState = PairingState.IDLE;
