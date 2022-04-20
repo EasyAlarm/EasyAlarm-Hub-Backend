@@ -111,3 +111,20 @@ export async function setUnitOnlineStatus(unitID: string, online: boolean): Prom
         throw new Error(error);
     }
 }
+
+export async function doUnitsExist(unitsIDS: string[])
+{
+    try
+    {
+        const units: UnitDocument[] = await UnitModel.find({ unitID: { $in: unitsIDS } });
+
+        if (units.length !== unitsIDS.length)
+            return false;
+
+        return true;
+    }
+    catch (error: any)
+    {
+        throw new Error(error);
+    }
+}
