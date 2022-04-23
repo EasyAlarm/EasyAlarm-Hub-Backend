@@ -8,6 +8,7 @@ import unitRouter from './routes/unitRoutes';
 import userRouter from './routes/userRoutes';
 import logRouter from './routes/logRoutes';
 import profileRouter from './routes/profileRoute';
+import hubRouter from './routes/hubRoute';
 import ApiError from './utils/apiError';
 
 class App
@@ -45,6 +46,7 @@ class App
         this.express.use('/api/unit', unitRouter);
         this.express.use('/api/log', logRouter);
         this.express.use('/api/profile', profileRouter);
+        this.express.use('/api/hub', hubRouter);
 
         this.express.get('/', protect, (req: Request, res: Response) => res.send("Auth route"));
         //test routes

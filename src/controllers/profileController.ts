@@ -7,7 +7,7 @@ import catchAsync from '../utils/catchAsync';
 
 export const addProfileHandler = catchAsync(async (req: Request<{}, {}, CreateProfileInput['body']>, res: Response, next: NextFunction) =>
 {
-    if (!await createProfile(req.body))
+    if (!await createProfile(req.body.name))
     {
         return next(new ApiError("Profile already exists", 400));
     }

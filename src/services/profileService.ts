@@ -3,11 +3,11 @@ import { DocumentDefinition } from 'mongoose';
 import ProfileModel, { ProfileDocument } from '../models/profileModel';
 import { getAllUnits } from './unitService';
 
-export async function createProfile(profile: DocumentDefinition<ProfileDocument>)
+export async function createProfile(profileName: string)
 {
     try 
     {
-        return await ProfileModel.create(profile);
+        return await ProfileModel.create(profileName);
     }
     catch (error: any) 
     {
@@ -25,6 +25,25 @@ export async function getProfile(profileName: string): Promise<ProfileDocument |
     {
         throw new Error(error);
     }
+}
+
+export async function doesProfileExist(profileName: string): Promise<boolean>
+{
+    try 
+    {
+        const doc = await ProfileModel.find({ name: profileName });
+
+        if (doc)
+        {
+            return true;
+        }
+    }
+    catch (error: any) 
+    {
+        throw new Error(error);
+    }
+
+    return false;
 }
 
 export async function updateProfile(profileName: string, profileUnitsIDS: string[]): Promise<ProfileDocument | null>

@@ -8,6 +8,7 @@ import PingerManager from './pingerManager';
 import { any, unknown } from 'zod';
 import sleep from '../utils/sleep';
 import UnitCommander from './unitCommander';
+import IProfile from './IProfile';
 
 export default class UnitManager
 {
@@ -94,5 +95,32 @@ export default class UnitManager
 
 
         this.pingerManager.clearPingers();
+    }
+
+    public ceaseSirens(): void
+    {
+        this.units.forEach(unit =>
+        {
+            if (unit.getType() !== "Siren")
+                return;
+
+            UnitCommander.send(unit, PayloadType.CEASE);
+        });
+    }
+
+    public fireSirens(profile?: IProfile): void
+    {
+        this.units.forEach(unit =>
+        {
+            if (unit.getType() !== "Siren")
+                return;
+
+            if (profile && !profile.unitIDS.some(u => u === unit.getId()))
+            {
+                return;
+            }
+
+            UnitCommander.send(unit, PayloadType.FIRE);
+        });
     }
 }

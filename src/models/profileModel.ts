@@ -2,6 +2,7 @@ import mongoose from 'mongoose';
 
 export interface ProfileDocument extends mongoose.Document
 {
+    units: any;
     name: string;
 }
 
