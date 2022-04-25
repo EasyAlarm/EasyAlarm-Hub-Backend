@@ -35,7 +35,7 @@ export const updateUnitSchema = object({
     body: object({
         friendlyName: string({
             required_error: "Name is required"
-        }),
+        }).min(3, "Friendly name must be at least 3 character long"),
     })
 });
 

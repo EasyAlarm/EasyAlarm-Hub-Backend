@@ -41,5 +41,5 @@ export const updateProfileHandler = catchAsync(async (req: Request<UpdateProfile
         return next(new ApiError("Profile does not exist", 400));
     }
 
-    res.status(200).send({ data: profile });
+    res.status(200).send("Profile updated");
 });
