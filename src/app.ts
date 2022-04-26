@@ -10,6 +10,7 @@ import logRouter from './routes/logRoutes';
 import profileRouter from './routes/profileRoute';
 import hubRouter from './routes/hubRoute';
 import ApiError from './utils/apiError';
+import HubCore from './hub/hubCore';
 
 class App
 {
@@ -55,6 +56,12 @@ class App
         {
             UnitCommander.send("02", PayloadType.CEASE);
             res.send("shh");
+        });
+
+        this.express.get('/reload', (req: Request, res: Response) =>
+        {
+            HubCore.unitManager.reload();
+            res.send("reloading");
         });
 
         this.express.post('/test/buzz', (req: Request, res: Response) => 

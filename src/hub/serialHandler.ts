@@ -14,6 +14,7 @@ export const init = (handleDataCallback: Function) =>
 
     parser.on('data', (data: string) =>
     {
+
         data = data.split(SOT).pop() || '';
 
         let formatedData = data.split('!');

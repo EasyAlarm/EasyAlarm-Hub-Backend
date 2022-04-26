@@ -13,7 +13,7 @@ export default class HubCore
 {
     private static hubState: HubStateType;
     public static selectedProfile: IProfile;
-    private static unitManager: UnitManager;
+    private static _unitManager: UnitManager;
 
     public static setState(state: HubStateType): void
     {
@@ -25,9 +25,9 @@ export default class HubCore
 
     public static async init(): Promise<void>
     {
-        this.unitManager = new UnitManager();
+        this._unitManager = new UnitManager();
 
-        await this.unitManager.init();
+        await this._unitManager.init();
 
         this.eventHandler();
 
@@ -45,7 +45,7 @@ export default class HubCore
     public static async disarm()
     {
         this.setState(HubStateType.DISARMED);
-        this.unitManager.ceaseSirens();
+        this._unitManager.ceaseSirens();
     }
 
     public static async alarm()
@@ -54,37 +54,37 @@ export default class HubCore
             return;
 
         this.setState(HubStateType.ALARM);
-        this.unitManager.fireSirens(this.selectedProfile);
+        this._unitManager.fireSirens(this.selectedProfile);
 
     }
 
     public static async panic()
     {
         this.setState(HubStateType.ALARM);
-        this.unitManager.fireSirens();
+        this._unitManager.fireSirens();
     }
 
-    public static GetUnitManager(): UnitManager
+    public static get unitManager(): UnitManager
     {
-        return this.unitManager;
+        return this._unitManager;
     }
 
     private static eventHandler(): void
     {
-        UnitManager.getEvents().on("offline", (unit: IUnit) =>
+        this._unitManager.getEvents().on("offline", (unit: IUnit) =>
         {
             console.log(`Unit ${unit.deviceID} is offline`);
             createOfflineUnitLog(unit);
             setUnitOnlineStatus(unit.deviceID, false);
         });
 
-        UnitManager.getEvents().on(String(PayloadType.PONG), (unit: IUnit) =>
+        this._unitManager.getEvents().on(String(PayloadType.PONG), (unit: IUnit) =>
         {
-            this.unitManager.getPingerManager().confirmPong(unit);
+            this._unitManager.getPingerManager().confirmPong(unit);
             setUnitOnlineStatus(unit.deviceID, true);
         });
 
-        UnitManager.getEvents().on(String(PayloadType.TRIGGERED), (unit: IUnit) =>
+        this._unitManager.getEvents().on(String(PayloadType.TRIGGERED), (unit: IUnit) =>
         {
             this.handleTrigger(unit);
         });
@@ -95,7 +95,7 @@ export default class HubCore
         if (this.hubState == HubStateType.DISARMED)
             return;
 
-        if (!this.selectedProfile.unitIDS.some(u => u === unit.deviceID))
+        if (!this.selectedProfile.unitIDS.find(u => u.toString() === unit._id.toString()))
         {
             return;
         }

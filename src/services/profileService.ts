@@ -1,5 +1,6 @@
 import mongoose from 'mongoose';
 import { DocumentDefinition } from 'mongoose';
+import { IUnit } from '../interfaces/IUnit';
 import ProfileModel, { ProfileDocument } from '../models/profileModel';
 import { getAllUnits } from './unitService';
 
@@ -52,11 +53,12 @@ export async function updateProfile(profileName: string, profileUnitsIDS: string
     {
         const units = await getAllUnits();
         const unitsIDS: string[] = [];
-        profileUnitsIDS.forEach(unitID =>
+        profileUnitsIDS.forEach(deviceID =>
         {
-            const unitModel = units.find((unit: any) => unit.unitID === unitID);
+            const unitModel = units.find((unit: IUnit) => unit.deviceID === deviceID);
 
-            unitsIDS.push(unitModel._id);
+            if (unitModel)
+                unitsIDS.push(unitModel._id);
         });
 
         //convert to objectid

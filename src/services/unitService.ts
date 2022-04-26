@@ -1,5 +1,7 @@
 import { DocumentDefinition } from 'mongoose';
+import HubCore from '../hub/hubCore';
 import Pairer, { PairingState } from '../hub/pairer';
+import { IUnit } from '../interfaces/IUnit';
 import UnitModel, { UnitDocument } from '../models/unitModel';
 import getNextNodeAddr from '../utils/getNextNodeAddr';
 
@@ -32,13 +34,15 @@ export async function createUnit(input: DocumentDefinition<UnitDocument>)
 
 
         const unit: UnitDocument = new UnitModel({
-            unitType: getUnitType(input.deviceID),
+            type: getUnitType(input.deviceID),
             friendlyName: input.friendlyName,
             deviceID: input.deviceID,
             nodeAddress: nodeAddr
         });
 
         await unit.save();
+
+        await HubCore.unitManager.reload();
 
         return true;
     }
@@ -60,7 +64,7 @@ export async function getUnit(deviceID: string): Promise<UnitDocument | null>
     }
 }
 
-export async function getAllUnits(): Promise<UnitDocument | null | any>
+export async function getAllUnits(): Promise<Array<IUnit>>
 {
     try
     {
@@ -76,7 +80,9 @@ export async function deleteUnit(deviceID: string): Promise<UnitDocument | null>
 {
     try
     {
-        return await UnitModel.findOneAndRemove({ deviceID });
+        const doc = await UnitModel.findOneAndRemove({ deviceID });
+        await HubCore.unitManager.reload();
+        return doc;
     }
     catch (error: any)
     {
@@ -90,7 +96,9 @@ export async function updateUnit(deviceID: string, unitFriendlyName: string): Pr
     {
         const filter = { deviceID };
         const update = { friendlyName: unitFriendlyName };
-        return await UnitModel.findOneAndUpdate(filter, update);
+        const doc = await UnitModel.findOneAndUpdate(filter, update);
+        await HubCore.unitManager.reload();
+        return doc;
     }
     catch (error: any)
     {

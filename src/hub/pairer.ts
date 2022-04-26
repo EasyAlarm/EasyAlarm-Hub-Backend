@@ -1,5 +1,6 @@
 import getNextNodeAddr from "../utils/getNextNodeAddr";
 import sleep from "../utils/sleep";
+import HubCore from "./hubCore";
 import PayloadType from "./payloadType";
 import UnitCommander from "./unitCommander";
 import UnitManager from "./unitManager";
@@ -29,7 +30,7 @@ export default class Pairer
     {
         console.log("Waiting for pairing request...");
 
-        UnitManager.getEvents().on(String(PayloadType.PAIR), async (incomingDeviceID: string) =>
+        HubCore.unitManager.getEvents().on(String(PayloadType.PAIR), async (incomingDeviceID: string) =>
         {
             this.pairUnit(incomingDeviceID);
         });
@@ -58,7 +59,7 @@ export default class Pairer
 
         console.log("Pairing request timed out");
 
-        UnitManager.getEvents().removeAllListeners(String(PayloadType.PAIR));
+        HubCore.unitManager.getEvents().removeAllListeners(String(PayloadType.PAIR));
 
         return this.state;
     }
@@ -81,6 +82,9 @@ export default class Pairer
         console.log(`Pairing unit ${this.deviceID} with ${nodeAddr}`);
 
         UnitCommander.send(this.defaultNodeAddr, PayloadType.OK, nodeAddr);
+
+        //give time for the unit to reset
+        await sleep(3000);
 
         this.state = PairingState.COMPLETE;
 

@@ -16,13 +16,9 @@ export default class PingerManager
 
     public async init(units: Array<IUnit>)
     {
-        this.clearPingers();
+        this.reloadPingers(units);
 
-        units.forEach((unitModel: IUnit) =>
-        {
-            let pinger = new Pinger(unitModel);
-            this.pingers.push(pinger);
-        });
+        console.log(`PingerManager: ${this.pingers.length} pinger(s) initialized`);
 
         while (this.shouldPing)
         {
@@ -47,9 +43,15 @@ export default class PingerManager
         });
     }
 
-    public clearPingers(): void
+    public reloadPingers(units: Array<IUnit>): void
     {
         this.pingers = [];
+
+        units.forEach((unitModel: IUnit) =>
+        {
+            let pinger = new Pinger(unitModel);
+            this.pingers.push(pinger);
+        });
     }
 
 }

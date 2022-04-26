@@ -3,6 +3,7 @@ import UnitManager from "./unitManager";
 import UnitCommander from "./unitCommander";
 import PayloadType from "./payloadType";
 import { IUnit } from "../interfaces/IUnit";
+import HubCore from "./hubCore";
 
 export default class Pinger
 {
@@ -34,7 +35,7 @@ export default class Pinger
 
         if (this.failedPingCounter >= this.failedPingThreshold)
         {
-            UnitManager.getEvents().emit("offline", this.unit);
+            HubCore.unitManager.getEvents().emit("offline", this.unit);
         }
     }
 }

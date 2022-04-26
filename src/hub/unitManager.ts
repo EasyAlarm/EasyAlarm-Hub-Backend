@@ -6,6 +6,7 @@ import PingerManager from './pingerManager';
 import UnitCommander from './unitCommander';
 import IProfile from './IProfile';
 import { IUnit } from '../interfaces/IUnit';
+import sleep from '../utils/sleep';
 
 export default class UnitManager
 {
@@ -33,9 +34,9 @@ export default class UnitManager
 
     public async init(): Promise<void>
     {
+        this.pingerManager.init(this.units);
         await this.reload();
         serialHandler.init(this.monitorSerial);
-        this.pingerManager.init(this.units);
 
         console.log("UnitManager initialized");
     }
@@ -45,14 +46,14 @@ export default class UnitManager
         return this.pingerManager;
     }
 
-    public static getEvents(): EventEmitter
+    public getEvents(): EventEmitter
     {
-        return this.instance.events;
+        return this.events;
     }
 
-    public static getUnits(): Array<IUnit>
+    public getUnits(): Array<IUnit>
     {
-        return this.instance.units;
+        return this.units;
     }
 
     public monitorSerial(serialData: Array<string>): void
@@ -61,7 +62,7 @@ export default class UnitManager
         let payload: PayloadType = PayloadType[serialData[1] as keyof typeof PayloadType];
         let content: string = serialData[2];
 
-        console.log(`Received serial data: ${deviceID} ${PayloadType[payload]} ${String(PayloadType.PAIR)}`);
+        //console.log(`Received serial data: ${deviceID} ${payload}`);
 
         if (PayloadType[payload] == String(PayloadType.PAIR))
         {
@@ -79,7 +80,7 @@ export default class UnitManager
         });
     }
 
-    private async reload(): Promise<void>
+    public async reload(): Promise<void>
     {
         this.units = [];
 
@@ -90,8 +91,8 @@ export default class UnitManager
             this.units.push(unitModel);
         });
 
+        this.pingerManager.reloadPingers(this.units);
 
-        this.pingerManager.clearPingers();
     }
 
     public ceaseSirens(): void
@@ -112,7 +113,7 @@ export default class UnitManager
             if (unit.type !== "Siren")
                 return;
 
-            if (profile && !profile.unitIDS.some(u => u === unit.deviceID))
+            if (profile && !profile.unitIDS.some(u => u.toString() === unit._id.toString()))
             {
                 return;
             }

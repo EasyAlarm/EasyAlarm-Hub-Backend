@@ -14,6 +14,13 @@ export default class UnitCommander
 
     private static instanceOfUnit(data: any): data is IUnit
     {
-        return 'nodeAddress' in data;
+        try
+        {
+            return 'nodeAddress' in data;
+        }
+        catch (error: any)
+        {
+            return false;
+        }
     }
 }
