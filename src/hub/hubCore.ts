@@ -1,3 +1,4 @@
+import { IUnit } from "../interfaces/IUnit";
 import { SeverityType } from "../models/logModel";
 import ProfileModel from "../models/profileModel";
 import { createhubStateLog, createOfflineUnitLog, createSensorTriggeredLog } from "../services/logService";
@@ -6,7 +7,6 @@ import HubStateType from "./hubStateType";
 import IHubStatus from "./IHubStatus";
 import IProfile from "./IProfile";
 import PayloadType from "./payloadType";
-import Unit from "./unit";
 import UnitManager from "./unitManager";
 
 export default class HubCore
@@ -71,31 +71,31 @@ export default class HubCore
 
     private static eventHandler(): void
     {
-        UnitManager.getEvents().on("offline", (unit: Unit) =>
+        UnitManager.getEvents().on("offline", (unit: IUnit) =>
         {
-            console.log(`Unit ${unit.getId()} is offline`);
+            console.log(`Unit ${unit.deviceID} is offline`);
             createOfflineUnitLog(unit);
-            setUnitOnlineStatus(unit.getId(), false);
+            setUnitOnlineStatus(unit.deviceID, false);
         });
 
-        UnitManager.getEvents().on(String(PayloadType.PONG), (unit: Unit) =>
+        UnitManager.getEvents().on(String(PayloadType.PONG), (unit: IUnit) =>
         {
             this.unitManager.getPingerManager().confirmPong(unit);
-            setUnitOnlineStatus(unit.getId(), true);
+            setUnitOnlineStatus(unit.deviceID, true);
         });
 
-        UnitManager.getEvents().on(String(PayloadType.TRIGGERED), (unit: Unit) =>
+        UnitManager.getEvents().on(String(PayloadType.TRIGGERED), (unit: IUnit) =>
         {
             this.handleTrigger(unit);
         });
     }
 
-    private static handleTrigger(unit: Unit): void
+    private static handleTrigger(unit: IUnit): void
     {
         if (this.hubState == HubStateType.DISARMED)
             return;
 
-        if (!this.selectedProfile.unitIDS.some(u => u === unit.getId()))
+        if (!this.selectedProfile.unitIDS.some(u => u === unit.deviceID))
         {
             return;
         }

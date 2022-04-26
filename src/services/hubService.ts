@@ -2,6 +2,7 @@ import HubCore from "../hub/hubCore";
 import HubStateType from "../hub/hubStateType";
 import IHubStatus from "../hub/IHubStatus";
 import IProfile from "../hub/IProfile";
+import { IUnit } from "../interfaces/IUnit";
 import { getProfile } from "./profileService";
 
 export async function armHub(profileName: string)
@@ -17,7 +18,7 @@ export async function armHub(profileName: string)
     const profile: IProfile =
     {
         name: profileModel.name,
-        unitIDS: units.map((unit: any) => unit.unitID)
+        unitIDS: units.map((unit: IUnit) => unit._id)
     };
 
     HubCore.arm(profile);

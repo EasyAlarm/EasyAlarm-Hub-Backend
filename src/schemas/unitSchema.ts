@@ -6,30 +6,30 @@ export const createUnitSchema = object({
         friendlyName: string({
             required_error: "Name is required"
         }),
-        unitID: string({
+        deviceID: string({
             required_error: "Unit ID is required"
         }).length(6, "Unit ID must be 6 characters long"),
-    }).refine((data) => validateCheckCharacter(data.unitID), {
+    }).refine((data) => validateCheckCharacter(data.deviceID), {
         message: "Invalid Unit ID"
     })
 });
 
 export const getUnitSchema = object({
     params: object({
-        unitID: string({
+        deviceID: string({
             required_error: "Unit ID is required"
         }).length(6, "Unit ID must be 6 characters long"),
-    }).refine((data) => validateCheckCharacter(data.unitID), {
+    }).refine((data) => validateCheckCharacter(data.deviceID), {
         message: "Invalid Unit ID"
     })
 });
 
 export const updateUnitSchema = object({
     params: object({
-        unitID: string({
+        deviceID: string({
             required_error: "Unit ID is required"
         }).length(6, "Unit ID must be 6 characters long"),
-    }).refine((data) => validateCheckCharacter(data.unitID), {
+    }).refine((data) => validateCheckCharacter(data.deviceID), {
         message: "Invalid Unit ID"
     }),
     body: object({
@@ -41,10 +41,10 @@ export const updateUnitSchema = object({
 
 export const deleteUnitSchema = object({
     params: object({
-        unitID: string({
+        deviceID: string({
             required_error: "Unit ID is required"
         }).length(6, "Unit ID must be 6 characters long"),
-    }).refine((data) => validateCheckCharacter(data.unitID), {
+    }).refine((data) => validateCheckCharacter(data.deviceID), {
         message: "Invalid Unit ID"
     })
 });

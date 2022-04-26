@@ -3,9 +3,9 @@ import Pairer, { PairingState } from '../hub/pairer';
 import UnitModel, { UnitDocument } from '../models/unitModel';
 import getNextNodeAddr from '../utils/getNextNodeAddr';
 
-const getUnitType = (unitID: string): any =>
+const getUnitType = (deviceID: string): any =>
 {
-    let firstChar: string = unitID.charAt(0);
+    let firstChar: string = deviceID.charAt(0);
 
     let dict: any =
     {
@@ -21,7 +21,7 @@ export async function createUnit(input: DocumentDefinition<UnitDocument>)
 {
     try
     {
-        const pairer: Pairer = new Pairer(input.unitID);
+        const pairer: Pairer = new Pairer(input.deviceID);
 
         const state: PairingState = await pairer.waitForPairingRequest();
 
@@ -32,9 +32,9 @@ export async function createUnit(input: DocumentDefinition<UnitDocument>)
 
 
         const unit: UnitDocument = new UnitModel({
-            unitType: getUnitType(input.unitID),
+            unitType: getUnitType(input.deviceID),
             friendlyName: input.friendlyName,
-            unitID: input.unitID,
+            deviceID: input.deviceID,
             nodeAddress: nodeAddr
         });
 
@@ -48,11 +48,11 @@ export async function createUnit(input: DocumentDefinition<UnitDocument>)
     }
 }
 
-export async function getUnit(unitID: string): Promise<UnitDocument | null>
+export async function getUnit(deviceID: string): Promise<UnitDocument | null>
 {
     try
     {
-        return await UnitModel.findOne({ unitID });
+        return await UnitModel.findOne({ deviceID });
     }
     catch (error: any)
     {
@@ -72,11 +72,11 @@ export async function getAllUnits(): Promise<UnitDocument | null | any>
     }
 }
 
-export async function deleteUnit(unitID: string): Promise<UnitDocument | null>
+export async function deleteUnit(deviceID: string): Promise<UnitDocument | null>
 {
     try
     {
-        return await UnitModel.findOneAndRemove({ unitID });
+        return await UnitModel.findOneAndRemove({ deviceID });
     }
     catch (error: any)
     {
@@ -84,11 +84,11 @@ export async function deleteUnit(unitID: string): Promise<UnitDocument | null>
     }
 }
 
-export async function updateUnit(unitID: string, unitFriendlyName: string): Promise<UnitDocument | null>
+export async function updateUnit(deviceID: string, unitFriendlyName: string): Promise<UnitDocument | null>
 {
     try
     {
-        const filter = { unitID };
+        const filter = { deviceID };
         const update = { friendlyName: unitFriendlyName };
         return await UnitModel.findOneAndUpdate(filter, update);
     }
@@ -98,11 +98,11 @@ export async function updateUnit(unitID: string, unitFriendlyName: string): Prom
     }
 }
 
-export async function setUnitOnlineStatus(unitID: string, online: boolean): Promise<UnitDocument | null>
+export async function setUnitOnlineStatus(deviceID: string, online: boolean): Promise<UnitDocument | null>
 {
     try
     {
-        const filter = { unitID };
+        const filter = { deviceID };
         const update = { online };
         return await UnitModel.findOneAndUpdate(filter, update);
     }

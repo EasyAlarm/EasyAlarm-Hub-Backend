@@ -1,10 +1,11 @@
+import { IUnit } from "../interfaces/IUnit";
 import { getAllUnits } from "../services/unitService";
 
 export default async function getNextNodeAddr(): Promise<string>
 {
     const unitModels = await getAllUnits();
 
-    unitModels.sort((a: any, b: any) => a.nodeAddress.localeCompare(b.nodeAddress));
+    unitModels.sort((a: IUnit, b: IUnit) => a.nodeAddress.localeCompare(b.nodeAddress));
 
     let smallestNum: number = 2;
 

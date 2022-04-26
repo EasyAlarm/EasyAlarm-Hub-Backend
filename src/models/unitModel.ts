@@ -3,12 +3,12 @@ import mongoose from 'mongoose';
 export interface UnitDocument extends mongoose.Document
 {
     friendlyName: string;
-    unitID: string;
+    deviceID: string;
 }
 
 const UnitSchema = new mongoose.Schema
     ({
-        unitType:
+        type:
         {
             type: String,
             required: true,
@@ -22,7 +22,7 @@ const UnitSchema = new mongoose.Schema
             maxlength: 16,
             minlength: 3
         },
-        unitID:
+        deviceID:
         {
             type: String,
             required: true,

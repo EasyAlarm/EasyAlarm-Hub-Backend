@@ -1,6 +1,6 @@
+import { IUnit } from "../interfaces/IUnit";
 import sleep from "../utils/sleep";
 import Pinger from "./pinger";
-import Unit from "./unit";
 
 export default class PingerManager
 {
@@ -14,11 +14,11 @@ export default class PingerManager
         this.pingers = [];
     }
 
-    public async init(units: Array<Unit>)
+    public async init(units: Array<IUnit>)
     {
         this.clearPingers();
 
-        units.forEach((unitModel: any) =>
+        units.forEach((unitModel: IUnit) =>
         {
             let pinger = new Pinger(unitModel);
             this.pingers.push(pinger);
@@ -36,11 +36,11 @@ export default class PingerManager
         }
     }
 
-    public confirmPong(unit: Unit): void
+    public confirmPong(unit: IUnit): void
     {
         this.pingers.forEach((pinger: Pinger) =>
         {
-            if (pinger.getUnit().getId() === unit.getId())
+            if (pinger.getUnit().deviceID === unit.deviceID)
             {
                 pinger.reset();
             }

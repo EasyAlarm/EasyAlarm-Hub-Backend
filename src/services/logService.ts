@@ -1,6 +1,6 @@
 import { DocumentDefinition } from 'mongoose';
 import HubStateType from '../hub/hubStateType';
-import Unit from '../hub/unit';
+import { IUnit } from '../interfaces/IUnit';
 import LogModel, { LogDocument, SeverityType } from '../models/logModel';
 
 
@@ -16,13 +16,13 @@ export async function createLog(log: DocumentDefinition<LogDocument>)
     }
 }
 
-export async function createOfflineUnitLog(unit: Unit)
+export async function createOfflineUnitLog(unit: IUnit)
 {
     try
     {
         return await createLog({
             date: new Date(),
-            context: `Unit ${unit.getId()} is offline`,
+            context: `Unit ${unit.deviceID} is offline`,
             severity: SeverityType.WARNING
         });
     }
@@ -33,13 +33,13 @@ export async function createOfflineUnitLog(unit: Unit)
 }
 
 
-export async function createSensorTriggeredLog(unit: Unit)
+export async function createSensorTriggeredLog(unit: IUnit)
 {
     try
     {
         return await createLog({
             date: new Date(),
-            context: `Sensor ${unit.getId()} triggered`,
+            context: `Sensor ${unit.deviceID} triggered`,
             severity: SeverityType.DANGER
         });
     }
@@ -49,13 +49,13 @@ export async function createSensorTriggeredLog(unit: Unit)
     }
 }
 
-export async function createUnitFired(unit: Unit)
+export async function createUnitFired(unit: IUnit)
 {
     try
     {
         return await createLog({
             date: new Date(),
-            context: `Unit ${unit.getId()} fired`,
+            context: `Unit ${unit.deviceID} fired`,
             severity: SeverityType.DANGER
         });
     }

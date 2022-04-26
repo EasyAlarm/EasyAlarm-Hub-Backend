@@ -7,7 +7,7 @@ import catchAsync from '../utils/catchAsync';
 export const addUnitHandler = catchAsync(async (req: Request<{}, {}, CreateUnitInput['body']>, res: Response, next: NextFunction) =>
 {
 
-    if (await getUnit(req.body.unitID))
+    if (await getUnit(req.body.deviceID))
     {
         return next(new ApiError("Unit already exists", 400));
     }
@@ -23,7 +23,7 @@ export const addUnitHandler = catchAsync(async (req: Request<{}, {}, CreateUnitI
 
 export const getUnitHandler = catchAsync(async (req: Request<GetUnitInput['params']>, res: Response, next: NextFunction) =>
 {
-    const unit = await getUnit(req.params.unitID);
+    const unit = await getUnit(req.params.deviceID);
 
     if (!unit)
     {
@@ -41,7 +41,7 @@ export const getAllUnitsHandler = catchAsync(async (req: Request, res: Response,
 
 export const deleteUnitHandler = catchAsync(async (req: Request<DeleteUnitInput['params']>, res: Response, next: NextFunction) =>
 {
-    if (!await deleteUnit(req.params.unitID))
+    if (!await deleteUnit(req.params.deviceID))
     {
         return next(new ApiError('Unit not found', 400));
     }
@@ -51,7 +51,7 @@ export const deleteUnitHandler = catchAsync(async (req: Request<DeleteUnitInput[
 
 export const updateUnitHandler = catchAsync(async (req: Request<UpdateUnitInput['params'], {}, UpdateUnitInput['body']>, res: Response, next: NextFunction) =>
 {
-    if (!await updateUnit(req.params.unitID, req.body.friendlyName))
+    if (!await updateUnit(req.params.deviceID, req.body.friendlyName))
     {
         return next(new ApiError('Unit not found', 400));
     }

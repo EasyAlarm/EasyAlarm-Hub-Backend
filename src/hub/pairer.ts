@@ -14,24 +14,24 @@ export enum PairingState
 
 export default class Pairer 
 {
-    private unitID: string;
+    private deviceID: string;
     private readonly defaultNodeAddr: string = "1";
     private readonly timeout: number = 30;
 
     private state: PairingState = PairingState.IDLE;
 
-    constructor(unitID: string)
+    constructor(deviceID: string)
     {
-        this.unitID = unitID;
+        this.deviceID = deviceID;
     }
 
     public async waitForPairingRequest(): Promise<PairingState>
     {
         console.log("Waiting for pairing request...");
 
-        UnitManager.getEvents().on(String(PayloadType.PAIR), async (incomingUnitID: string) =>
+        UnitManager.getEvents().on(String(PayloadType.PAIR), async (incomingDeviceID: string) =>
         {
-            this.pairUnit(incomingUnitID);
+            this.pairUnit(incomingDeviceID);
         });
 
         let counter: number = 0;
@@ -63,13 +63,13 @@ export default class Pairer
         return this.state;
     }
 
-    private async pairUnit(incomingUnitID: string) 
+    private async pairUnit(incomingDeviceID: string) 
     {
         this.state = PairingState.PAIRING;
 
         console.log("Pairing unit...");
 
-        if (this.unitID !== incomingUnitID)
+        if (this.deviceID !== incomingDeviceID)
         {
             console.log("Unit IDs do not match");
             this.state = PairingState.FAILED;
@@ -78,7 +78,7 @@ export default class Pairer
 
         const nodeAddr = await getNextNodeAddr();
 
-        console.log(`Pairing unit ${this.unitID} with ${nodeAddr}`);
+        console.log(`Pairing unit ${this.deviceID} with ${nodeAddr}`);
 
         UnitCommander.send(this.defaultNodeAddr, PayloadType.OK, nodeAddr);
 

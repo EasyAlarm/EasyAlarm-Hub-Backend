@@ -11,7 +11,7 @@ router
     .post(validateResource(createUnitSchema), addUnitHandler);
 
 router
-    .route('/:unitID')
+    .route('/:deviceID')
     .get(validateResource(getUnitSchema), getUnitHandler)
     .patch(validateResource(updateUnitSchema), updateUnitHandler)
     .delete(validateResource(deleteUnitSchema), deleteUnitHandler);

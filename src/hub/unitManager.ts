@@ -1,20 +1,17 @@
 import { EventEmitter } from 'stream';
 import { getAllUnits } from '../services/unitService';
 import PayloadType from './payloadType';
-import Unit from './unit';
 import serialHandler = require('./serialHandler');
-import Pinger from './pinger';
 import PingerManager from './pingerManager';
-import { any, unknown } from 'zod';
-import sleep from '../utils/sleep';
 import UnitCommander from './unitCommander';
 import IProfile from './IProfile';
+import { IUnit } from '../interfaces/IUnit';
 
 export default class UnitManager
 {
     private static instance: UnitManager;
 
-    private units: Array<Unit>;
+    private units: Array<IUnit>;
     private events: EventEmitter;
 
     private pingerManager: PingerManager;
@@ -53,7 +50,7 @@ export default class UnitManager
         return this.instance.events;
     }
 
-    public static getUnits(): Array<Unit>
+    public static getUnits(): Array<IUnit>
     {
         return this.instance.units;
     }
@@ -75,7 +72,7 @@ export default class UnitManager
 
         this.units.forEach(unit => 
         {
-            if (unit.getId() === deviceID)
+            if (unit.deviceID === deviceID)
             {
                 this.events.emit(PayloadType[payload], unit);
             }
@@ -88,9 +85,9 @@ export default class UnitManager
 
         const unitModels = await getAllUnits();
 
-        unitModels.forEach((unitModel: any) =>
+        unitModels.forEach((unitModel: IUnit) =>
         {
-            this.units.push(new Unit(unitModel.unitID, unitModel.unitType, unitModel.nodeAddress));
+            this.units.push(unitModel);
         });
 
 
@@ -101,7 +98,7 @@ export default class UnitManager
     {
         this.units.forEach(unit =>
         {
-            if (unit.getType() !== "Siren")
+            if (unit.type !== "Siren")
                 return;
 
             UnitCommander.send(unit, PayloadType.CEASE);
@@ -112,10 +109,10 @@ export default class UnitManager
     {
         this.units.forEach(unit =>
         {
-            if (unit.getType() !== "Siren")
+            if (unit.type !== "Siren")
                 return;
 
-            if (profile && !profile.unitIDS.some(u => u === unit.getId()))
+            if (profile && !profile.unitIDS.some(u => u === unit.deviceID))
             {
                 return;
             }

@@ -1,14 +1,19 @@
-import Unit from "./unit";
 import serialHandler = require('./serialHandler');
 import PayloadType from "./payloadType";
+import { IUnit } from '../interfaces/IUnit';
 
 export default class UnitCommander
 {
-    public static send(nodeAddress: string | Unit, payload: PayloadType, content?: string): void
+    public static send(nodeAddress: string | IUnit, payload: PayloadType, content?: string): void
     {
-        if (nodeAddress instanceof Unit)
-            nodeAddress = nodeAddress.getNodeAddress();
+        if (this.instanceOfUnit(nodeAddress))
+            nodeAddress = nodeAddress.nodeAddress;
 
         serialHandler.write(`${payload}!${nodeAddress}!${content || ""}`);
+    }
+
+    private static instanceOfUnit(data: any): data is IUnit
+    {
+        return 'nodeAddress' in data;
     }
 }

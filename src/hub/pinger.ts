@@ -1,22 +1,22 @@
-import Unit from "./unit";
 import sleep from "../utils/sleep";
 import UnitManager from "./unitManager";
 import UnitCommander from "./unitCommander";
 import PayloadType from "./payloadType";
+import { IUnit } from "../interfaces/IUnit";
 
 export default class Pinger
 {
-    private unit: Unit;
+    private unit: IUnit;
 
     private failedPingCounter: number = 0;
     private failedPingThreshold: number = 3;
 
-    constructor(unit: Unit)
+    constructor(unit: IUnit)
     {
         this.unit = unit;
     }
 
-    public getUnit(): Unit
+    public getUnit(): IUnit
     {
         return this.unit;
     }
