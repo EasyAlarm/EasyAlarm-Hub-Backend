@@ -22,7 +22,7 @@ export async function createOfflineUnitLog(unit: IUnit)
     {
         return await createLog({
             date: new Date(),
-            context: `Unit ${unit.deviceID} is offline`,
+            context: `Unit ${unit.friendlyName} (${unit.deviceID}) is offline`,
             severity: SeverityType.WARNING
         });
     }
@@ -39,7 +39,7 @@ export async function createSensorTriggeredLog(unit: IUnit)
     {
         return await createLog({
             date: new Date(),
-            context: `Sensor ${unit.deviceID} triggered`,
+            context: `Sensor ${unit.friendlyName} (${unit.deviceID}) triggered`,
             severity: SeverityType.DANGER
         });
     }
@@ -55,7 +55,7 @@ export async function createUnitFired(unit: IUnit)
     {
         return await createLog({
             date: new Date(),
-            context: `Unit ${unit.deviceID} fired`,
+            context: `Unit ${unit.friendlyName} (${unit.deviceID}) fired`,
             severity: SeverityType.DANGER
         });
     }
@@ -72,7 +72,7 @@ export async function createhubStateLog(hubState: HubStateType)
         return await createLog({
             date: new Date(),
             context: `Hub state is ${HubStateType[hubState]}`,
-            severity: SeverityType.INFO
+            severity: HubStateType.ALARM ? SeverityType.DANGER : SeverityType.INFO
         });
     }
     catch (error: any)
