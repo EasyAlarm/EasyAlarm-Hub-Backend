@@ -56,6 +56,12 @@ export default class UnitManager
         return this.units;
     }
 
+    public getSpeaker(): IUnit | undefined
+    {
+        //return first siren
+        return this.units.find((unit: IUnit) => unit.type === "Siren");
+    }
+
     public monitorSerial(serialData: Array<string>): void
     {
         let deviceID: string = serialData[0];
@@ -118,7 +124,7 @@ export default class UnitManager
                 return;
             }
 
-            UnitCommander.send(unit, PayloadType.FIRE);
+            UnitCommander.send(unit, PayloadType.FIRE, "0");
         });
     }
 }

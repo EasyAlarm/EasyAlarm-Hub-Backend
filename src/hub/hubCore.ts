@@ -3,10 +3,12 @@ import { SeverityType } from "../models/logModel";
 import ProfileModel from "../models/profileModel";
 import { createhubStateLog, createOfflineUnitLog, createSensorTriggeredLog } from "../services/logService";
 import { getUnit, setUnitOnlineStatus } from "../services/unitService";
+import sleep from "../utils/sleep";
 import HubStateType from "./hubStateType";
 import IHubStatus from "./IHubStatus";
 import IProfile from "./IProfile";
 import PayloadType from "./payloadType";
+import UnitCommander from "./unitCommander";
 import UnitManager from "./unitManager";
 
 export default class HubCore
@@ -14,6 +16,10 @@ export default class HubCore
     private static hubState: HubStateType;
     public static selectedProfile: IProfile;
     private static _unitManager: UnitManager;
+
+    //settings
+    private static _armDelay: number = 5;
+    private static _alarmDelay: number = 5;
 
     public static setState(state: HubStateType): void
     {
@@ -38,6 +44,26 @@ export default class HubCore
 
     public static async arm(profile: IProfile)
     {
+        this.setState(HubStateType.ARMING);
+
+        const speaker = this._unitManager.getSpeaker();
+
+        if (speaker)
+        {
+            UnitCommander.send(speaker, PayloadType.FIRE, "1");
+
+            await sleep(200);
+
+            for (let i = 0; i < this._armDelay; i++)
+            {
+                if (this.hubState === HubStateType.DISARMED)
+                    return;
+
+                await sleep(1000);
+                UnitCommander.send(speaker, PayloadType.FIRE, "2");
+            }
+        }
+
         this.setState(HubStateType.ARMED);
         this.selectedProfile = profile;
     }
@@ -46,12 +72,38 @@ export default class HubCore
     {
         this.setState(HubStateType.DISARMED);
         this._unitManager.ceaseSirens();
+
+        await sleep(200);
+
+        const speaker = this._unitManager.getSpeaker();
+
+        if (speaker)
+            UnitCommander.send(speaker, PayloadType.FIRE, "1");
     }
 
     public static async alarm()
     {
-        if (this.hubState === HubStateType.ALARM)
+        if (this.hubState === HubStateType.ALARM || this.hubState === HubStateType.TRIGGERED)
             return;
+
+        this.setState(HubStateType.TRIGGERED);
+
+        const speaker = this._unitManager.getSpeaker();
+
+        if (speaker)
+        {
+            UnitCommander.send(speaker, PayloadType.FIRE, "3");
+            for (let i = 0; i < this._alarmDelay; i++)
+            {
+                if (this.hubState === HubStateType.DISARMED)
+                {
+                    return;
+                }
+                await sleep(1000);
+            }
+            UnitCommander.send(speaker, PayloadType.FIRE, "4");
+            await sleep(200);
+        }
 
         this.setState(HubStateType.ALARM);
         this._unitManager.fireSirens(this.selectedProfile);
@@ -99,7 +151,7 @@ export default class HubCore
     private static handleTrigger(unit: IUnit): void
     {
 
-        if (this.hubState == HubStateType.DISARMED)
+        if (this.hubState !== HubStateType.ARMED)
             return;
 
         console.log(this.selectedProfile.unitIDS);
