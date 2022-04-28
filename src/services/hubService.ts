@@ -14,7 +14,7 @@ export async function armHub(profileName: string)
         return false;
     }
 
-    const units = profileModel.units;
+    const units = profileModel.unitIDS;
     const profile: IProfile =
     {
         name: profileModel.name,

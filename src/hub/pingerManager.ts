@@ -49,6 +49,9 @@ export default class PingerManager
 
         units.forEach((unitModel: IUnit) =>
         {
+            if (unitModel.type === "KeyFob")
+                return;
+
             let pinger = new Pinger(unitModel);
             this.pingers.push(pinger);
         });

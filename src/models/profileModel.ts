@@ -2,7 +2,7 @@ import mongoose from 'mongoose';
 
 export interface ProfileDocument extends mongoose.Document
 {
-    units: any;
+    unitIDS: any;
     name: string;
 }
 
@@ -15,7 +15,7 @@ const ProfileSchema = new mongoose.Schema
             minlength: 3,
         },
 
-        units:
+        unitIDS:
             [
                 {
                     type: mongoose.Schema.Types.ObjectId,

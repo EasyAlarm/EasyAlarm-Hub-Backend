@@ -2,7 +2,7 @@ import { IUnit } from "../interfaces/IUnit";
 import { SeverityType } from "../models/logModel";
 import ProfileModel from "../models/profileModel";
 import { createhubStateLog, createOfflineUnitLog, createSensorTriggeredLog } from "../services/logService";
-import { setUnitOnlineStatus } from "../services/unitService";
+import { getUnit, setUnitOnlineStatus } from "../services/unitService";
 import HubStateType from "./hubStateType";
 import IHubStatus from "./IHubStatus";
 import IProfile from "./IProfile";
@@ -84,16 +84,25 @@ export default class HubCore
             setUnitOnlineStatus(unit.deviceID, true);
         });
 
-        this._unitManager.getEvents().on(String(PayloadType.TRIGGERED), (unit: IUnit) =>
+        this._unitManager.getEvents().on(String(PayloadType.TRIGGERED), (unit: IUnit, content: string) =>
         {
+            if (unit.type === "KeyFob")
+            {
+                this.handleKeyFob(content);
+                return;
+            }
+
             this.handleTrigger(unit);
         });
     }
 
     private static handleTrigger(unit: IUnit): void
     {
+
         if (this.hubState == HubStateType.DISARMED)
             return;
+
+        console.log(this.selectedProfile.unitIDS);
 
         if (!this.selectedProfile.unitIDS.find(u => u.toString() === unit._id.toString()))
         {
@@ -102,6 +111,29 @@ export default class HubCore
 
         createSensorTriggeredLog(unit);
         this.alarm();
+    }
+
+    private static async handleKeyFob(content: string): Promise<void>
+    {
+        switch (content)
+        {
+            case "0":
+                this.disarm();
+                break;
+            case "1":
+                const lockdownProfile = await ProfileModel.findOne({ name: "Lockdown" });
+                this.arm(lockdownProfile);
+                break;
+            case "2":
+                const panicProfile = await ProfileModel.findOne({ name: "Night" });
+                this.arm(panicProfile);
+                break;
+            case "3":
+                this.panic();
+                break;
+            default:
+                break;
+        }
     }
 
     public static getStatus(): IHubStatus

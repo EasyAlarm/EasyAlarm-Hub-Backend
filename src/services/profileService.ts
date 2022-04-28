@@ -20,7 +20,7 @@ export async function getProfile(profileName: string): Promise<ProfileDocument |
 {
     try 
     {
-        return await ProfileModel.findOne({ name: profileName }).populate('units');
+        return await ProfileModel.findOne({ name: profileName }).populate('unitIDS');
     }
     catch (error: any) 
     {

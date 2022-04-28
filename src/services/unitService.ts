@@ -13,7 +13,8 @@ const getUnitType = (deviceID: string): any =>
     {
         a: "DoorGuard",
         b: "MotionSensor",
-        c: "Siren"
+        c: "Siren",
+        d: "KeyFob"
     };
 
     return dict[firstChar];

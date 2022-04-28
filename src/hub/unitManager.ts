@@ -62,7 +62,7 @@ export default class UnitManager
         let payload: PayloadType = PayloadType[serialData[1] as keyof typeof PayloadType];
         let content: string = serialData[2];
 
-        //console.log(`Received serial data: ${deviceID} ${payload}`);
+        console.log(`Received serial data: ${deviceID} ${payload}`);
 
         if (PayloadType[payload] == String(PayloadType.PAIR))
         {
@@ -75,7 +75,7 @@ export default class UnitManager
         {
             if (unit.deviceID === deviceID)
             {
-                this.events.emit(PayloadType[payload], unit);
+                this.events.emit(PayloadType[payload], unit, content);
             }
         });
     }
