@@ -44,10 +44,10 @@ class App
     private initializeRouters(): void
     {
         this.express.use('/api/user', userRouter);
-        this.express.use('/api/unit', unitRouter);
-        this.express.use('/api/log', logRouter);
-        this.express.use('/api/profile', profileRouter);
-        this.express.use('/api/hub', hubRouter);
+        this.express.use('/api/unit', protect, unitRouter);
+        this.express.use('/api/log', protect, logRouter);
+        this.express.use('/api/profile', protect, profileRouter);
+        this.express.use('/api/hub', protect, hubRouter);
 
         this.express.get('/', protect, (req: Request, res: Response) => res.send("Auth route"));
         //test routes
