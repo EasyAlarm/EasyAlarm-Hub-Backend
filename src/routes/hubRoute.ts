@@ -1,7 +1,8 @@
 import Router from 'express';
-import { armHubHandler, disarmHubHandler, getHubStatusHandler, panicHubHandler } from '../controllers/hubController';
+import { armHubHandler, disarmHubHandler, getHubSettingsHandler, getHubStatusHandler, panicHubHandler, updateHubSettingsHandler } from '../controllers/hubController';
 import validateResource from '../middleware/validateResource';
 import { armHubSchema } from '../schemas/hubSchema';
+import { hubSettingsSchema } from '../schemas/hubSettingsSchema';
 
 const router = Router();
 
@@ -20,5 +21,10 @@ router
 router
     .route('/')
     .get(getHubStatusHandler);
+
+router
+    .route('/settings')
+    .get(getHubSettingsHandler)
+    .patch(validateResource(hubSettingsSchema), updateHubSettingsHandler);
 
 export default router;

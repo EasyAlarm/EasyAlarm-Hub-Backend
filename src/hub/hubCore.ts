@@ -5,6 +5,7 @@ import { createhubStateLog, createOfflineUnitLog, createSensorTriggeredLog } fro
 import { getUnit, setUnitOnlineStatus } from "../services/unitService";
 import sleep from "../utils/sleep";
 import HubStateType from "./hubStateType";
+import IHubSettings from "./IHubSettings";
 import IHubStatus from "./IHubStatus";
 import IProfile from "./IProfile";
 import PayloadType from "./payloadType";
@@ -17,9 +18,7 @@ export default class HubCore
     public static selectedProfile: IProfile;
     private static _unitManager: UnitManager;
 
-    //settings
-    private static _armDelay: number = 5;
-    private static _alarmDelay: number = 5;
+    private static hubSettings: IHubSettings;
 
     public static setState(state: HubStateType): void
     {
@@ -27,10 +26,28 @@ export default class HubCore
         createhubStateLog(state);
     }
 
+    public static getSettings(): IHubSettings
+    {
+        return this.hubSettings;
+    }
+
+    public static setSettings(hubSettings: IHubSettings): void
+    {
+        this.hubSettings = hubSettings;
+    }
+
     private constructor() { };
 
     public static async init(): Promise<void>
     {
+        this.hubSettings = {
+            armDelay: 10,
+            alarmDelay: 5,
+            alarmDuration: 360,
+            alarmOnOfflineUnit: false
+        };
+
+
         this._unitManager = new UnitManager();
 
         await this._unitManager.init();
@@ -54,7 +71,7 @@ export default class HubCore
 
             await sleep(200);
 
-            for (let i = 0; i < this._armDelay; i++)
+            for (let i = 0; i < this.hubSettings.armDelay; i++)
             {
                 if (this.hubState === HubStateType.DISARMED)
                     return;
@@ -93,7 +110,7 @@ export default class HubCore
         if (speaker)
         {
             UnitCommander.send(speaker, PayloadType.FIRE, "3");
-            for (let i = 0; i < this._alarmDelay; i++)
+            for (let i = 0; i < this.hubSettings.alarmDelay; i++)
             {
                 if (this.hubState === HubStateType.DISARMED)
                 {
@@ -126,6 +143,7 @@ export default class HubCore
         this._unitManager.getEvents().on("offline", (unit: IUnit) =>
         {
             console.log(`Unit ${unit.deviceID} is offline`);
+
             createOfflineUnitLog(unit);
             setUnitOnlineStatus(unit.deviceID, false);
         });

@@ -1,6 +1,8 @@
 import { Request, Response, NextFunction } from 'express';
+import IHubSettings from '../hub/IHubSettings';
 import { ArmHubInput } from '../schemas/hubSchema';
-import { armHub, disarmHub, getHubStatus, panicHub } from '../services/hubService';
+import { UpdateHubSettingsSchema } from '../schemas/hubSettingsSchema';
+import { armHub, disarmHub, getHubSettings, getHubStatus, panicHub, updateHubSettings } from '../services/hubService';
 import { doesProfileExist } from '../services/profileService';
 import ApiError from '../utils/apiError';
 import catchAsync from "../utils/catchAsync";
@@ -34,4 +36,28 @@ export const getHubStatusHandler = catchAsync(async (req: Request, res: Response
 {
     const status = await getHubStatus();
     res.status(200).send({ data: status });
+});
+
+export const getHubSettingsHandler = catchAsync(async (req: Request, res: Response, next: NextFunction) =>
+{
+    const settings = await getHubSettings();
+    res.status(200).send({ data: settings });
+});
+
+export const updateHubSettingsHandler = catchAsync(async (req: Request<{}, {}, UpdateHubSettingsSchema['body']>, res: Response, next: NextFunction) =>
+{
+    const hubSettings: IHubSettings =
+    {
+        //convert to int 
+        armDelay: parseInt(req.body.armDelay),
+        alarmDuration: parseInt(req.body.alarmDuration),
+        alarmDelay: parseInt(req.body.alarmDelay),
+        alarmOnOfflineUnit: false
+    };
+    
+    console.log(hubSettings);
+
+    await updateHubSettings(hubSettings);
+
+    res.status(200).send("Hub settings updated");
 });
