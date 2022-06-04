@@ -8,7 +8,14 @@ export async function createProfile(profileName: string)
 {
     try 
     {
-        return await ProfileModel.create(profileName);
+
+        const profile: ProfileDocument = new ProfileModel({
+            name: profileName
+        });
+
+        profile.save();
+
+        return true;
     }
     catch (error: any) 
     {
@@ -61,9 +68,10 @@ export async function updateProfile(profileName: string, profileUnitsIDS: string
                 unitsIDS.push(unitModel._id);
         });
 
+        console.log(unitsIDS);
         //convert to objectid
         const filter = { name: profileName };
-        const update = { units: unitsIDS };
+        const update = { unitIDS: unitsIDS };
         return await ProfileModel.findOneAndUpdate(filter, update);
 
     }

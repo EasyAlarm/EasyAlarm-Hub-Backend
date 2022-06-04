@@ -29,12 +29,11 @@ export const getProfileHanlder = catchAsync(async (req: Request<GetProfileInput[
 
 export const updateProfileHandler = catchAsync(async (req: Request<UpdateProfileInput['params'], {}, UpdateProfileInput['body']>, res: Response, next: NextFunction) =>
 {
-    if (!await doUnitsExist(req.body.unitsIDS))
-    {
-        return next(new ApiError("One or more units do not exist", 400));
-    }
+
+    console.log(req.body);
 
     const profile = await updateProfile(req.params.name, req.body.unitsIDS);
+
 
     if (!profile)
     {

@@ -144,7 +144,8 @@ export default class HubCore
         {
             console.log(`Unit ${unit.deviceID} is offline`);
 
-            createOfflineUnitLog(unit);
+            if (unit.online)
+                createOfflineUnitLog(unit);
             setUnitOnlineStatus(unit.deviceID, false);
         });
 

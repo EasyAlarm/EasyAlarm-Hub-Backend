@@ -28,6 +28,7 @@ export const registerUserHandler = catchAsync(async (req: Request<{}, {}, Create
 
 export const loginUserHandler = catchAsync(async (req: Request<{}, {}, LoginUserInput['body']>, res: Response, next: NextFunction) =>
 {
+    console.log("route hit");
     const userDocument = await getUser(req.body.username);
 
     if (!userDocument)
