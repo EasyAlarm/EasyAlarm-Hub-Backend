@@ -10,8 +10,6 @@ import sleep from '../utils/sleep';
 
 export default class UnitManager
 {
-    private static instance: UnitManager;
-
     private units: Array<IUnit>;
     private events: EventEmitter;
 
@@ -20,11 +18,6 @@ export default class UnitManager
     constructor()
     {
         this.monitorSerial = this.monitorSerial.bind(this);
-
-        if (UnitManager.instance != null)
-            throw new Error("Error, UnitManager is already initialized");
-
-        UnitManager.instance = this;
 
         this.events = new EventEmitter();
         this.pingerManager = new PingerManager();
