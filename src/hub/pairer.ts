@@ -1,9 +1,8 @@
+import { EventEmitter } from "stream";
 import getNextNodeAddr from "../utils/getNextNodeAddr";
 import sleep from "../utils/sleep";
-import HubCore from "./hubCore";
-import PayloadType from "./payloadType";
-import UnitCommander from "./unitCommander";
-import UnitManager from "./unitManager";
+import PayloadType from "./types/enums/payloadType";
+import PendingUnit from "./units/pendingUnit";
 
 export enum PairingState
 {
@@ -15,22 +14,25 @@ export enum PairingState
 
 export default class Pairer 
 {
-    private deviceID: string;
+    private pendingUnit: PendingUnit;
+    private eventEmitter: EventEmitter;
+
     private readonly defaultNodeAddr: string = "1";
     private readonly timeout: number = 30;
 
     private state: PairingState = PairingState.IDLE;
 
-    constructor(deviceID: string)
+    constructor(pendingUnit: PendingUnit, eventEmitter: EventEmitter)
     {
-        this.deviceID = deviceID;
+        this.pendingUnit = pendingUnit;
+        this.eventEmitter = eventEmitter;
     }
 
     public async waitForPairingRequest(): Promise<PairingState>
     {
         console.log("Waiting for pairing request...");
 
-        HubCore.unitManager.getEvents().on(String(PayloadType.PAIR), async (incomingDeviceID: string) =>
+        this.eventEmitter.on(String(PayloadType.PAIR), async (incomingDeviceID: string) =>
         {
             this.pairUnit(incomingDeviceID);
         });
@@ -59,7 +61,7 @@ export default class Pairer
 
         console.log("Pairing request timed out");
 
-        HubCore.unitManager.getEvents().removeAllListeners(String(PayloadType.PAIR));
+        this.eventEmitter.removeAllListeners(String(PayloadType.PAIR));
 
         return this.state;
     }
@@ -70,7 +72,7 @@ export default class Pairer
 
         console.log("Pairing unit...");
 
-        if (this.deviceID !== incomingDeviceID)
+        if (this.pendingUnit.deviceID !== incomingDeviceID)
         {
             console.log("Unit IDs do not match");
             this.state = PairingState.FAILED;
@@ -79,9 +81,9 @@ export default class Pairer
 
         const nodeAddr = await getNextNodeAddr();
 
-        console.log(`Pairing unit ${this.deviceID} with ${nodeAddr}`);
+        console.log(`Pairing unit ${this.pendingUnit.deviceID} with ${nodeAddr}`);
 
-        UnitCommander.send(this.defaultNodeAddr, PayloadType.OK, nodeAddr);
+        this.pendingUnit.acknowledgePing(this.defaultNodeAddr);
 
         //give time for the unit to reset
         await sleep(3000);
