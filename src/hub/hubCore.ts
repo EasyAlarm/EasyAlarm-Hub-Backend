@@ -1,163 +1,124 @@
-import { IUnit } from "../interfaces/IUnit";
-import { SeverityType } from "../models/logModel";
+import { IUnit } from "./types/interfaces/IUnit";
 import ProfileModel from "../models/profileModel";
-import { createhubStateLog, createOfflineUnitLog, createSensorTriggeredLog } from "../services/logService";
-import { getUnit, setUnitOnlineStatus } from "../services/unitService";
-import sleep from "../utils/sleep";
-import HubStateType from "./hubStateType";
-import IHubSettings from "./IHubSettings";
-import IHubStatus from "./IHubStatus";
-import IProfile from "./IProfile";
-import PayloadType from "./payloadType";
-import UnitCommander from "./unitCommander";
+import { createOfflineUnitLog, createSensorTriggeredLog } from "../services/logService";
+import { setUnitOnlineStatus } from "../services/unitService";
+import HubStateType from "./types/enums/hubStateType";
+import IHubStatus from "./types/interfaces/IHubStatus";
+import PayloadType from "./types/enums/payloadType";
 import UnitManager from "./unitManager";
+import SerialMonitor from "./serial/serialMonitor";
+import EventEmitter from "events";
+import PingerManager from "./pingerManager";
+import AlarmSystem from "./alarmSystem";
+import Pairer from "./pairer";
+import UnitFactory from "./units/unitFactory";
+import { SerialPort } from "serialport";
+import { SerialWriter } from "./serial/serialWriter";
+import PendingUnit from "./units/pendingUnit";
+import Unit from "./units/unit";
+import KeyFob from "./units/keyFob";
+import { KeyFobContentType } from "./types/enums/payloadContentTypes";
 
 export default class HubCore
 {
-    private static hubState: HubStateType;
-    public static selectedProfile: IProfile;
-    private static _unitManager: UnitManager;
+    private static instance: HubCore;
 
-    private static hubSettings: IHubSettings;
+    private serialMonitor: SerialMonitor;
+    private serialWriter: SerialWriter;
 
-    public static setState(state: HubStateType): void
+    private eventEmitter: EventEmitter;
+
+    private pingerManager: PingerManager;
+    private alarmSystem: AlarmSystem;
+    private unitManager: UnitManager;
+
+
+    private constructor()
     {
-        this.hubState = state;
-        createhubStateLog(state);
+        const serialPort = new SerialPort({ path: '/dev/ttyUSB0', baudRate: 9600 });
+        this.serialWriter = new SerialWriter(serialPort);
+        this.unitManager = new UnitManager(new UnitFactory(this.serialWriter));
+
+        this.eventEmitter = new EventEmitter();
+        this.serialMonitor = new SerialMonitor(serialPort, this.eventEmitter, this.unitManager.getUnits());
+
+        this.pingerManager = new PingerManager(this.eventEmitter);
+        this.alarmSystem = new AlarmSystem(this.unitManager);
     }
 
-    public static getSettings(): IHubSettings
+    public static getInstance(): HubCore 
     {
-        return this.hubSettings;
+        if (!HubCore.instance)
+        {
+            HubCore.instance = new HubCore();
+        }
+
+        return HubCore.instance;
     }
 
-    public static setSettings(hubSettings: IHubSettings): void
+    public async init(): Promise<void>
     {
-        this.hubSettings = hubSettings;
-    }
+        await this.unitManager.reload();
+        this.pingerManager.init(this.unitManager.getUnits());
 
-    private constructor() { };
-
-    public static async init(): Promise<void>
-    {
-        this.hubSettings = {
-            armDelay: 10,
-            alarmDelay: 5,
-            alarmDuration: 360,
-            alarmOnOfflineUnit: false
-        };
-
-
-        this._unitManager = new UnitManager();
-
-        await this._unitManager.init();
+        this.serialMonitor.establishCommunication();
 
         this.eventHandler();
-
-        this.hubState = HubStateType.DISARMED;
 
         console.log("HubCore initialized");
     }
 
-    public static async arm(profile: IProfile)
+    public getAlarmSystem(): AlarmSystem
     {
-        this.setState(HubStateType.ARMING);
-
-        const speaker = this._unitManager.getSpeaker();
-
-        if (speaker)
-        {
-            UnitCommander.send(speaker, PayloadType.FIRE, "1");
-
-            await sleep(200);
-
-            for (let i = 0; i < this.hubSettings.armDelay; i++)
-            {
-                if (this.hubState === HubStateType.DISARMED)
-                    return;
-
-                await sleep(1000);
-                UnitCommander.send(speaker, PayloadType.FIRE, "2");
-            }
-        }
-
-        this.setState(HubStateType.ARMED);
-        this.selectedProfile = profile;
+        return this.alarmSystem;
     }
 
-    public static async disarm()
+    public createPairer(deviceID: string): Pairer
     {
-        this.setState(HubStateType.DISARMED);
-        this._unitManager.ceaseSirens();
-
-        await sleep(200);
-
-        const speaker = this._unitManager.getSpeaker();
-
-        if (speaker)
-            UnitCommander.send(speaker, PayloadType.FIRE, "1");
+        const pendingUnit = new PendingUnit(deviceID, this.serialWriter);
+        return new Pairer(pendingUnit, this.eventEmitter);
     }
 
-    public static async alarm()
+    public async reload(): Promise<void>
     {
-        if (this.hubState === HubStateType.ALARM || this.hubState === HubStateType.TRIGGERED)
-            return;
-
-        this.setState(HubStateType.TRIGGERED);
-
-        const speaker = this._unitManager.getSpeaker();
-
-        if (speaker)
-        {
-            UnitCommander.send(speaker, PayloadType.FIRE, "3");
-            for (let i = 0; i < this.hubSettings.alarmDelay; i++)
-            {
-                if (this.hubState === HubStateType.DISARMED)
-                {
-                    return;
-                }
-                await sleep(1000);
-            }
-            UnitCommander.send(speaker, PayloadType.FIRE, "4");
-            await sleep(200);
-        }
-
-        this.setState(HubStateType.ALARM);
-        this._unitManager.fireSirens(this.selectedProfile);
-
+        await this.unitManager.reload();
+        this.pingerManager.reloadPingers(this.unitManager.getUnits());
     }
 
-    public static async panic()
+    public getStatus(): IHubStatus
     {
-        this.setState(HubStateType.ALARM);
-        this._unitManager.fireSirens();
+        const currentProfile = this.alarmSystem.getCurentProfile();
+        const hubState = this.alarmSystem.getState();
+
+        return {
+            state: HubStateType[hubState],
+            currentProfile: hubState === HubStateType.ARMED ? currentProfile.name : "None"
+        };
     }
 
-    public static get unitManager(): UnitManager
+    private eventHandler(): void
     {
-        return this._unitManager;
-    }
-
-    private static eventHandler(): void
-    {
-        this._unitManager.getEvents().on("offline", (unit: IUnit) =>
+        this.eventEmitter.on("offline", (unit: Unit) =>
         {
             console.log(`Unit ${unit.deviceID} is offline`);
 
             if (unit.online)
+            {
                 createOfflineUnitLog(unit);
+            }
+
             setUnitOnlineStatus(unit.deviceID, false);
         });
 
-        this._unitManager.getEvents().on(String(PayloadType.PONG), (unit: IUnit) =>
+        this.eventEmitter.on(String(PayloadType.PONG), (unit: Unit) =>
         {
-            this._unitManager.getPingerManager().confirmPong(unit);
+            this.pingerManager.confirmPong(unit);
             setUnitOnlineStatus(unit.deviceID, true);
         });
 
-        this._unitManager.getEvents().on(String(PayloadType.TRIGGERED), (unit: IUnit, content: string) =>
+        this.eventEmitter.on(String(PayloadType.TRIGGERED), (unit: Unit, content: string) =>
         {
-            if (unit.type === "KeyFob")
+            if (unit instanceof KeyFob)
             {
                 this.handleKeyFob(content);
                 return;
@@ -167,54 +128,42 @@ export default class HubCore
         });
     }
 
-    private static handleTrigger(unit: IUnit): void
+    private handleTrigger(unit: IUnit): void
     {
 
-        if (this.hubState !== HubStateType.ARMED)
+        if (this.alarmSystem.getState() !== HubStateType.ARMED)
             return;
 
-        console.log(this.selectedProfile.unitIDS);
-
-        if (!this.selectedProfile.unitIDS.find(u => u.toString() === unit._id.toString()))
+        if (!this.alarmSystem.getCurentProfile().unitIDS.find(u => u.toString() === unit._id.toString()))
         {
             return;
         }
 
         createSensorTriggeredLog(unit);
-        this.alarm();
+        this.alarmSystem.alarm();
     }
 
-    private static async handleKeyFob(content: string): Promise<void>
+    private async handleKeyFob(content: string): Promise<void>
     {
         switch (content)
         {
-            case "0":
-                this.disarm();
+            case KeyFobContentType.DISARM:
+                this.alarmSystem.disarm();
                 break;
-            case "1":
+            case KeyFobContentType.ARM_LOCKDOWN:
                 const lockdownProfile = await ProfileModel.findOne({ name: "Lockdown" });
-                this.arm(lockdownProfile);
+                this.alarmSystem.arm(lockdownProfile);
                 break;
-            case "2":
+            case KeyFobContentType.ARM_NIGHT:
                 const panicProfile = await ProfileModel.findOne({ name: "Night" });
-                this.arm(panicProfile);
+                this.alarmSystem.arm(panicProfile);
                 break;
-            case "3":
-                this.panic();
+            case KeyFobContentType.PANIC:
+                this.alarmSystem.panic();
                 break;
             default:
                 break;
         }
     }
 
-    public static getStatus(): IHubStatus
-    {
-        return {
-            state: HubStateType[this.hubState],
-            currentProfile: this.hubState === HubStateType.ARMED ? this.selectedProfile.name : "None"
-        };
-    }
-
 }
-
-
