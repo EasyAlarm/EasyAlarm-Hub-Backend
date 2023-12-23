@@ -1,4 +1,4 @@
-import { IUnit } from "../interfaces/IUnit";
+import { IUnit } from "../hub/types/interfaces/IUnit";
 import { getAllUnits } from "../services/unitService";
 
 export default async function getNextNodeAddr(): Promise<string>
