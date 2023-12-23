@@ -1,6 +1,6 @@
 import { DocumentDefinition } from 'mongoose';
-import HubStateType from '../hub/hubStateType';
-import { IUnit } from '../interfaces/IUnit';
+import HubStateType from '../hub/types/enums/hubStateType';
+import { IUnit } from '../hub/types/interfaces/IUnit';
 import LogModel, { LogDocument, SeverityType } from '../models/logModel';
 
 
