@@ -1,123 +1,76 @@
-import { EventEmitter } from 'stream';
 import { getAllUnits } from '../services/unitService';
-import PayloadType from './payloadType';
-import serialHandler = require('./serialHandler');
-import PingerManager from './pingerManager';
-import UnitCommander from './unitCommander';
-import IProfile from './IProfile';
-import { IUnit } from '../interfaces/IUnit';
-import sleep from '../utils/sleep';
+import Unit from './units/unit';
+import Siren from './units/siren';
+import IProfile from './types/interfaces/IProfile';
+import UnitFactory from './units/unitFactory';
+import { IUnit } from './types/interfaces/IUnit';
 
 export default class UnitManager
 {
-    private units: Array<IUnit>;
-    private events: EventEmitter;
+    private units: Array<Unit>;
+    private unitFactory: UnitFactory;
 
-    private pingerManager: PingerManager;
-
-    constructor()
+    constructor(unitFactory: UnitFactory)
     {
-        this.monitorSerial = this.monitorSerial.bind(this);
-
-        this.events = new EventEmitter();
-        this.pingerManager = new PingerManager();
-
+        this.unitFactory = unitFactory;
         this.units = [];
     }
 
-    public async init(): Promise<void>
-    {
-        this.pingerManager.init(this.units);
-        await this.reload();
-        serialHandler.init(this.monitorSerial);
-
-        console.log("UnitManager initialized");
-    }
-
-    public getPingerManager(): PingerManager
-    {
-        return this.pingerManager;
-    }
-
-    public getEvents(): EventEmitter
-    {
-        return this.events;
-    }
-
-    public getUnits(): Array<IUnit>
+    public getUnits(): Array<Unit>
     {
         return this.units;
     }
 
-    public getSpeaker(): IUnit | undefined
+    public getSpeaker(): Siren | undefined
     {
         //return first siren
-        return this.units.find((unit: IUnit) => unit.type === "Siren");
-    }
-
-    public monitorSerial(serialData: Array<string>): void
-    {
-        let deviceID: string = serialData[0];
-        let payload: PayloadType = PayloadType[serialData[1] as keyof typeof PayloadType];
-        let content: string = serialData[2];
-
-        console.log(`Received serial data: ${deviceID} ${payload}`);
-
-        if (PayloadType[payload] == String(PayloadType.PAIR))
-        {
-            console.log("received pair payload");
-            this.events.emit(PayloadType[payload], deviceID);
-            return;
-        }
-
-        this.units.forEach(unit => 
-        {
-            if (unit.deviceID === deviceID)
-            {
-                this.events.emit(PayloadType[payload], unit, content);
-            }
-        });
+        return this.units.find(unit => unit instanceof Siren) as Siren | undefined;
     }
 
     public async reload(): Promise<void>
     {
-        this.units = [];
+        // Clear the array without reassigning it
+        this.units.length = 0;
 
         const unitModels = await getAllUnits();
-
         unitModels.forEach((unitModel: IUnit) =>
         {
-            this.units.push(unitModel);
+            const unit = this.unitFactory.createUnit(unitModel);
+            if (unit)
+            {
+                this.units.push(unit);
+            }
         });
-
-        this.pingerManager.reloadPingers(this.units);
-
     }
-
     public ceaseSirens(): void
     {
-        this.units.forEach(unit =>
+        this.units.forEach(siren =>
         {
-            if (unit.type !== "Siren")
+            if (!(siren instanceof Siren))
+            {
                 return;
+            }
 
-            UnitCommander.send(unit, PayloadType.CEASE);
+            siren.stopBuzzer();
         });
     }
 
     public fireSirens(profile?: IProfile): void
     {
-        this.units.forEach(unit =>
+        this.units.forEach(siren =>
         {
-            if (unit.type !== "Siren")
-                return;
-
-            if (profile && !profile.unitIDS.some(u => u.toString() === unit._id.toString()))
+            if (!(siren instanceof Siren))
             {
                 return;
             }
 
-            UnitCommander.send(unit, PayloadType.FIRE, "0");
+
+            if (profile && !profile.unitIDS.some(u => u.toString() === siren._id.toString()))
+            {
+                return;
+            }
+
+            siren.startBuzzer();
         });
     }
 }
