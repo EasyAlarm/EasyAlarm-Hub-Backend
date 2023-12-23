@@ -1,7 +1,8 @@
 import { DocumentDefinition } from 'mongoose';
 import HubCore from '../hub/hubCore';
 import Pairer, { PairingState } from '../hub/pairer';
-import { IUnit } from '../interfaces/IUnit';
+import UnitType from '../hub/types/enums/unitType';
+import { IUnit } from '../hub/types/interfaces/IUnit';
 import UnitModel, { UnitDocument } from '../models/unitModel';
 import getNextNodeAddr from '../utils/getNextNodeAddr';
 
@@ -9,12 +10,12 @@ const getUnitType = (deviceID: string): any =>
 {
     let firstChar: string = deviceID.charAt(0);
 
-    let dict: any =
+    let dict: { [key: string]: UnitType; } =
     {
-        a: "DoorGuard",
-        b: "MotionSense",
-        c: "Siren",
-        d: "KeyFob"
+        a: UnitType.DOOR_GUARD,
+        b: UnitType.MOTION_SENSE,
+        c: UnitType.SIREN,
+        d: UnitType.KEY_FOB
     };
 
     return dict[firstChar];
@@ -24,7 +25,7 @@ export async function createUnit(input: DocumentDefinition<UnitDocument>)
 {
     try
     {
-        const pairer: Pairer = new Pairer(input.deviceID);
+        const pairer: Pairer = HubCore.getInstance().createPairer(input.deviceID);
 
         const state: PairingState = await pairer.waitForPairingRequest();
 
@@ -43,9 +44,9 @@ export async function createUnit(input: DocumentDefinition<UnitDocument>)
 
         await unit.save();
 
-        await HubCore.unitManager.reload();
+        await HubCore.getInstance().reload();
 
-        return true;
+        return unit;
     }
     catch (error: any)
     {
@@ -82,7 +83,7 @@ export async function deleteUnit(deviceID: string): Promise<UnitDocument | null>
     try
     {
         const doc = await UnitModel.findOneAndRemove({ deviceID });
-        await HubCore.unitManager.reload();
+        await HubCore.getInstance().reload();
         return doc;
     }
     catch (error: any)
@@ -98,7 +99,7 @@ export async function updateUnit(deviceID: string, unitFriendlyName: string): Pr
         const filter = { deviceID };
         const update = { friendlyName: unitFriendlyName };
         const doc = await UnitModel.findOneAndUpdate(filter, update);
-        await HubCore.unitManager.reload();
+        await HubCore.getInstance().reload();
         return doc;
     }
     catch (error: any)
