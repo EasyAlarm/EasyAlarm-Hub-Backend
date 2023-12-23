@@ -1,6 +1,4 @@
 import express, { Application, Request, Response, NextFunction } from 'express';
-import PayloadType from './hub/payloadType';
-import UnitCommander from './hub/unitCommander';
 import errorHandler from './middleware/errorHandler';
 import protect from './middleware/protect';
 
@@ -9,8 +7,8 @@ import userRouter from './routes/userRoutes';
 import logRouter from './routes/logRoutes';
 import profileRouter from './routes/profileRoute';
 import hubRouter from './routes/hubRoute';
+import settingsRouter from './routes/settingsRoute';
 import ApiError from './utils/apiError';
-import HubCore from './hub/hubCore';
 
 class App
 {
@@ -48,37 +46,15 @@ class App
         this.express.use('/api/log', protect, logRouter);
         this.express.use('/api/profile', protect, profileRouter);
         this.express.use('/api/hub', protect, hubRouter);
+        this.express.use('/api/settings', protect, settingsRouter);
 
         this.express.get('/', protect, (req: Request, res: Response) => res.send("Auth route"));
-        //test routes
-
-        this.express.post('/test/shh', (req: Request, res: Response) => 
-        {
-            UnitCommander.send("02", PayloadType.CEASE);
-            res.send("shh");
-        });
-
-        this.express.get('/reload', (req: Request, res: Response) =>
-        {
-            HubCore.unitManager.reload();
-            res.send("reloading");
-        });
-
-        this.express.post('/test/buzz', (req: Request, res: Response) => 
-        {
-            UnitCommander.send("02", PayloadType.FIRE);
-            res.send("buzz");
-        });
-
 
         this.express.all('*', (req: Request, res: Response, next: NextFunction) =>
         {
             next(new ApiError(" Route not found", 404));
         });
-
-
     }
-
 
     private initializeErrorHandling(): void
     {
