@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { AnyZodObject } from 'zod';
+import { BaseHttpResponse } from '../utils/baseHttpResponse';
 
 const validate = (schema: AnyZodObject) => (req: Request, res: Response, next: NextFunction) =>
 {
@@ -21,7 +22,8 @@ const validate = (schema: AnyZodObject) => (req: Request, res: Response, next: N
         });
 
 
-        return res.status(400).json({ errors: errors });
+        const response = BaseHttpResponse.errorResponse(400, errors[0]);
+        return res.status(response.status).json(response);
     }
 };
 

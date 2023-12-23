@@ -1,5 +1,6 @@
-import { Request, Response, NextFunction } from 'express';
+import { Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
+import { BaseHttpResponse } from '../utils/baseHttpResponse';
 
 const protect = (req: any, res: Response, next: NextFunction) =>
 {
@@ -7,7 +8,8 @@ const protect = (req: any, res: Response, next: NextFunction) =>
 
     if (!token)
     {
-        return res.status(401).json({ msg: 'No token' });
+        const response = BaseHttpResponse.errorResponse(401, 'No token');
+        return res.status(response.status).json(response);
     }
 
     try
@@ -21,7 +23,8 @@ const protect = (req: any, res: Response, next: NextFunction) =>
     }
     catch (err)
     {
-        res.status(401).json({ msg: 'Token is not valid' });
+        const response = BaseHttpResponse.errorResponse(401, 'Token is invalid');
+        res.status(response.status).json(response);
     }
 };
 
