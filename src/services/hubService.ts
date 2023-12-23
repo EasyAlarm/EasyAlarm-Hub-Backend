@@ -1,10 +1,7 @@
 import HubCore from "../hub/hubCore";
-import HubStateType from "../hub/hubStateType";
-import IHubSettings from "../hub/IHubSettings";
-import IHubStatus from "../hub/IHubStatus";
-import IProfile from "../hub/IProfile";
-import { IUnit } from "../interfaces/IUnit";
-import { UpdateHubSettingsSchema } from "../schemas/hubSettingsSchema";
+import IHubStatus from "../hub/types/interfaces/IHubStatus";
+import IProfile from "../hub/types/interfaces/IProfile";
+import { IUnit } from "../hub/types/interfaces/IUnit";
 import { getProfile } from "./profileService";
 
 export async function armHub(profileName: string)
@@ -23,34 +20,24 @@ export async function armHub(profileName: string)
         unitIDS: units.map((unit: IUnit) => unit._id)
     };
 
-    HubCore.arm(profile);
+    HubCore.getInstance().getAlarmSystem().arm(profile);
 
     return true;
 }
 
 export async function disarmHub() 
 {
-    HubCore.disarm();
+    HubCore.getInstance().getAlarmSystem().disarm();
     return true;
 }
 
 export async function panicHub()
 {
-    HubCore.panic();
+    HubCore.getInstance().getAlarmSystem().panic();
     return true;
 }
 
 export async function getHubStatus(): Promise<IHubStatus>
 {
-    return HubCore.getStatus();
-}
-
-export async function getHubSettings(): Promise<IHubSettings>
-{
-    return HubCore.getSettings();
-}
-
-export async function updateHubSettings(hubSettings: IHubSettings): Promise<void>
-{
-    HubCore.setSettings(hubSettings);
+    return HubCore.getInstance().getStatus();
 }

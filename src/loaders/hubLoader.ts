@@ -4,7 +4,7 @@ export default async (): Promise<boolean> =>
 {
     try 
     {
-        HubCore.init();
+        HubCore.getInstance().init();
         return true;
     }
     catch (error)
