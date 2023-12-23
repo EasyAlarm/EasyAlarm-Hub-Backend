@@ -4,6 +4,7 @@ import { UserDocument } from '../models/userModel';
 import { CreateUserInput, LoginUserInput } from '../schemas/userSchema';
 import { createUser, hasAlreadyRegistered, getUser, isValidPassword } from '../services/userService';
 import ApiError from '../utils/apiError';
+import { BaseHttpResponse } from '../utils/baseHttpResponse';
 import catchAsync from '../utils/catchAsync';
 
 const generateToken = (user: UserDocument) =>
@@ -22,13 +23,14 @@ export const registerUserHandler = catchAsync(async (req: Request<{}, {}, Create
 
     const token = generateToken(userDocument);
 
-    res.status(201).json({ token, user: userDocument });
+    const response = BaseHttpResponse.successResponse({ token, user: userDocument }, 201);
+
+    res.status(response.status).json(response);
 
 });
 
 export const loginUserHandler = catchAsync(async (req: Request<{}, {}, LoginUserInput['body']>, res: Response, next: NextFunction) =>
 {
-    console.log("route hit");
     const userDocument = await getUser(req.body.username);
 
     if (!userDocument)
@@ -44,5 +46,8 @@ export const loginUserHandler = catchAsync(async (req: Request<{}, {}, LoginUser
 
     const token = generateToken(userDocument);
 
-    res.status(200).json({ token });
+
+    const response = BaseHttpResponse.successResponse({ token, user: userDocument });
+
+    res.status(response.status).json(response);
 });
