@@ -6,6 +6,7 @@ import unitRouter from './routes/unitRoutes';
 import userRouter from './routes/userRoutes';
 import logRouter from './routes/logRoutes';
 import profileRouter from './routes/profileRoute';
+import rfidRouter from './routes/rfidRoute';
 import hubRouter from './routes/hubRoute';
 import settingsRouter from './routes/settingsRoute';
 import ApiError from './utils/apiError';
@@ -47,6 +48,7 @@ class App
         this.express.use('/api/profile', protect, profileRouter);
         this.express.use('/api/hub', protect, hubRouter);
         this.express.use('/api/settings', protect, settingsRouter);
+        this.express.use('/api/rfid', protect, rfidRouter);
 
         this.express.get('/', protect, (req: Request, res: Response) => res.send("Auth route"));
 
