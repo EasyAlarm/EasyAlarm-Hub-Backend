@@ -1,23 +1,21 @@
-import sleep from "../utils/sleep";
-import UnitManager from "./unitManager";
-import UnitCommander from "./unitCommander";
-import PayloadType from "./payloadType";
-import { IUnit } from "../interfaces/IUnit";
-import HubCore from "./hubCore";
+import { EventEmitter } from "stream";
+import Unit from "./units/unit";
 
 export default class Pinger
 {
-    private unit: IUnit;
+    private unit: Unit;
+    private eventEmitter: EventEmitter;
 
     private failedPingCounter: number = 0;
     private failedPingThreshold: number = 3;
 
-    constructor(unit: IUnit)
+    constructor(unit: Unit, eventEmitter: EventEmitter)
     {
         this.unit = unit;
+        this.eventEmitter = eventEmitter;
     }
 
-    public getUnit(): IUnit
+    public getUnit(): Unit
     {
         return this.unit;
     }
@@ -29,13 +27,13 @@ export default class Pinger
 
     public ping(): void
     {
-        UnitCommander.send(this.unit, PayloadType.PING);
+        this.unit.ping();
 
         this.failedPingCounter++;
 
         if (this.failedPingCounter >= this.failedPingThreshold)
         {
-            HubCore.unitManager.getEvents().emit("offline", this.unit);
+            this.eventEmitter.emit("offline", this.unit);
         }
     }
 }
