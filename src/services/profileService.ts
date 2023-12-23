@@ -1,6 +1,6 @@
 import mongoose from 'mongoose';
 import { DocumentDefinition } from 'mongoose';
-import { IUnit } from '../interfaces/IUnit';
+import { IUnit } from '../hub/types/interfaces/IUnit';
 import ProfileModel, { ProfileDocument } from '../models/profileModel';
 import { getAllUnits } from './unitService';
 
@@ -15,7 +15,7 @@ export async function createProfile(profileName: string)
 
         profile.save();
 
-        return true;
+        return profile;
     }
     catch (error: any) 
     {
