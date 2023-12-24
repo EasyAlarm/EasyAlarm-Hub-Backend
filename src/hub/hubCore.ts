@@ -18,6 +18,8 @@ import PendingUnit from "./units/pendingUnit";
 import Unit from "./units/unit";
 import KeyFob from "./units/keyFob";
 import { KeyFobContentType } from "./types/enums/payloadContentTypes";
+import { isValidRfidCard } from "../services/rfidService";
+import Rfid from "./units/rfid";
 
 export default class HubCore
 {
@@ -123,9 +125,34 @@ export default class HubCore
                 this.handleKeyFob(content);
                 return;
             }
+            else if (unit instanceof Rfid)
+            {
+                this.handleRfid(content);
+                return;
+            }
 
             this.handleTrigger(unit);
         });
+    }
+
+    private async handleRfid(content: string): Promise<void>
+    {
+        const isValid = await isValidRfidCard(content);
+
+        if (!isValid)
+        {
+            return;
+        }
+
+        if (this.alarmSystem.getState() === HubStateType.DISARMED) 
+        {
+            const lockdownProfile = await ProfileModel.findOne({ name: "Lockdown" });
+            this.alarmSystem.arm(lockdownProfile);
+        }
+        else
+        {
+            this.alarmSystem.disarm();
+        }
     }
 
     private handleTrigger(unit: IUnit): void
