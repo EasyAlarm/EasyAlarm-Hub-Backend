@@ -4,6 +4,7 @@ enum UnitType
     MOTION_SENSE = "MotionSense",
     SIREN = "Siren",
     KEY_FOB = "KeyFob",
+    RFID = "Rfid"
 }
 
 export default UnitType;
