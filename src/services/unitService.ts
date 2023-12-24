@@ -15,7 +15,8 @@ const getUnitType = (deviceID: string): any =>
         a: UnitType.DOOR_GUARD,
         b: UnitType.MOTION_SENSE,
         c: UnitType.SIREN,
-        d: UnitType.KEY_FOB
+        d: UnitType.KEY_FOB,
+        e: UnitType.RFID
     };
 
     return dict[firstChar];

@@ -4,6 +4,7 @@ import { IUnit } from "../types/interfaces/IUnit";
 import DoorGuard from "./doorGuard";
 import KeyFob from "./keyFob";
 import MotionSense from "./motionSense";
+import Rfid from "./rfid";
 import Siren from "./siren";
 import Unit from "./unit";
 
@@ -28,6 +29,8 @@ export default class UnitFactory
                 return new MotionSense(unitModel, this.serialWriter);
             case UnitType.SIREN:
                 return new Siren(unitModel, this.serialWriter);
+            case UnitType.RFID:
+                return new Rfid(unitModel, this.serialWriter);
         }
 
         return null;
