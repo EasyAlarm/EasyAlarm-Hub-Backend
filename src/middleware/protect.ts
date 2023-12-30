@@ -14,7 +14,7 @@ const protect = (req: any, res: Response, next: NextFunction) =>
 
     try
     {
-        const decoded: any = jwt.verify(token, process.env.JWT_SECRET as jwt.Secret);
+        const decoded: any = jwt.verify(token, process.env.JWT_ACCESS_SECRET as jwt.Secret);
 
         req.user = decoded.user;
 

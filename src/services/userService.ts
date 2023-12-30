@@ -32,6 +32,11 @@ export async function getUser(username: string): Promise<UserDocument | null>
     return await UserModel.findOne({ username });
 }
 
+export async function getUserById(id: number): Promise<UserDocument | null>
+{
+    return await UserModel.findOne({ _id: id });
+}
+
 export async function isValidPassword(user: UserDocument, password: string): Promise<boolean>
 {
     return await bcrypt.compare(password, user.password);

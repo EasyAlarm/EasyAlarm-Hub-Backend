@@ -27,6 +27,15 @@ export const verifyUserSchema = object({
     }),
 });
 
+export const refreshTokenSchema = object({
+    body: object({
+        refreshToken: string({
+            required_error: 'Refresh token is required'
+        }),
+    }),
+});
+
+export type RefreshTokenInput = TypeOf<typeof refreshTokenSchema>;
 export type CreateUserInput = TypeOf<typeof createUserSchema>;
 export type LoginUserInput = TypeOf<typeof verifyUserSchema>;
 

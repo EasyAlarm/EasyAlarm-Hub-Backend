@@ -1,15 +1,19 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import { UserDocument } from '../models/userModel';
-import { CreateUserInput, LoginUserInput } from '../schemas/userSchema';
-import { createUser, hasAlreadyRegistered, getUser, isValidPassword } from '../services/userService';
+import { CreateUserInput, LoginUserInput, RefreshTokenInput } from '../schemas/userSchema';
+import { createUser, hasAlreadyRegistered, getUser, isValidPassword, getUserById } from '../services/userService';
 import ApiError from '../utils/apiError';
 import { BaseHttpResponse } from '../utils/baseHttpResponse';
 import catchAsync from '../utils/catchAsync';
 
-const generateToken = (user: UserDocument) =>
+const generateTokens = (user: UserDocument) =>
 {
-    return jwt.sign({ id: user.id }, process.env.JWT_SECRET as jwt.Secret, { expiresIn: '1h' });
+    const accessToken = jwt.sign({ id: user.id }, process.env.JWT_ACCESS_SECRET as jwt.Secret, { expiresIn: '1h' });
+    const refreshToken = jwt.sign({ id: user.id }, process.env.JWT_REFRESH_SECRET as jwt.Secret, { expiresIn: '7d' });
+
+    return { accessToken, refreshToken };
+
 };
 
 export const registerUserHandler = catchAsync(async (req: Request<{}, {}, CreateUserInput['body']>, res: Response, next: NextFunction) =>
@@ -21,9 +25,9 @@ export const registerUserHandler = catchAsync(async (req: Request<{}, {}, Create
 
     const userDocument = await createUser(req.body);
 
-    const token = generateToken(userDocument);
+    const { accessToken, refreshToken } = generateTokens(userDocument);
 
-    const response = BaseHttpResponse.successResponse({ token, user: userDocument }, 201);
+    const response = BaseHttpResponse.successResponse({ accessToken, refreshToken, user: userDocument });
 
     res.status(response.status).json(response);
 
@@ -35,19 +39,54 @@ export const loginUserHandler = catchAsync(async (req: Request<{}, {}, LoginUser
 
     if (!userDocument)
     {
-        return next(new ApiError("Invalid credentials", 400));
+        return next(new ApiError("Invalid credentials", 401));
     }
 
 
     if (!await isValidPassword(userDocument, req.body.password))
     {
-        return next(new ApiError("Invalid credentials", 400));
+        return next(new ApiError("Invalid credentials", 401));
     }
 
-    const token = generateToken(userDocument);
+    const { accessToken, refreshToken } = generateTokens(userDocument);
 
-
-    const response = BaseHttpResponse.successResponse({ token, user: userDocument });
+    const response = BaseHttpResponse.successResponse({ accessToken, refreshToken, user: userDocument });
 
     res.status(response.status).json(response);
+});
+
+export const refreshTokenHandler = catchAsync(async (req: Request<{}, {}, RefreshTokenInput['body']>, res: Response, next: NextFunction) =>
+{
+    const { refreshToken } = req.body;
+
+    if (!refreshToken)
+    {
+        return next(new ApiError("Refresh Token required", 401));
+    }
+
+    jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET as jwt.Secret, async (err, decoded) =>
+    {
+        if (err)
+        {
+            return next(new ApiError("Invalid Refresh Token", 403));
+        }
+
+        if (typeof decoded !== 'object' || !decoded.id)
+        {
+            return next(new ApiError("Invalid Token Data", 400));
+        }
+
+        const userDocument = await getUserById(decoded.id);
+
+        if (!userDocument)
+        {
+            return next(new ApiError("User not found", 404));
+        }
+
+        const { accessToken, refreshToken: newRefreshToken } = generateTokens(userDocument);
+
+        const response = BaseHttpResponse.successResponse({ accessToken, refreshToken: newRefreshToken });
+
+        res.status(response.status).json(response);
+    });
 });
