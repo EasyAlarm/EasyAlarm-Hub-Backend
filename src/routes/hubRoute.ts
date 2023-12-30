@@ -18,7 +18,7 @@ router
     .post(panicHubHandler);
 
 router
-    .route('/')
+    .route('/status')
     .get(getHubStatusHandler);
 
 export default router;
