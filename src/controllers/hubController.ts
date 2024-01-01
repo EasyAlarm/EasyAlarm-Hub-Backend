@@ -1,17 +1,16 @@
 import { Request, Response, NextFunction } from 'express';
-import { IAlarmSettings } from '../hub/types/interfaces/IHubSettings';
 import { ArmHubInput } from '../schemas/hubSchema';
 import { armHub, disarmHub, getHubStatus, panicHub } from '../services/hubService';
 import { doesProfileExist } from '../services/profileService';
-import ApiError from '../utils/apiError';
 import { BaseHttpResponse } from '../utils/baseHttpResponse';
 import catchAsync from "../utils/catchAsync";
+import ProfileDoesNotExist from '../exceptions/api/profiles/profileDoesNotExist';
 
 export const armHubHandler = catchAsync(async (req: Request<ArmHubInput['params']>, res: Response, next: NextFunction) =>
 {
     if (!await doesProfileExist(req.params.profileName))
     {
-        return next(new ApiError("Profile does not exist", 400));
+        return next(new ProfileDoesNotExist());
     }
 
     armHub(req.params.profileName);

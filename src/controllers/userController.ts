@@ -3,9 +3,13 @@ import jwt from 'jsonwebtoken';
 import { UserDocument } from '../models/userModel';
 import { CreateUserInput, LoginUserInput, RefreshTokenInput } from '../schemas/userSchema';
 import { createUser, hasAlreadyRegistered, getUser, isValidPassword, getUserById } from '../services/userService';
-import ApiError from '../utils/apiError';
+import ApiError from '../exceptions/api/apiError';
 import { BaseHttpResponse } from '../utils/baseHttpResponse';
 import catchAsync from '../utils/catchAsync';
+import AccountAlreadyRegisteredError from '../exceptions/api/auth/accountAlreadyRegisteredError';
+import InvalidCredentialsError from '../exceptions/api/auth/invalidCredentialsError';
+import RefreshTokenRequiredError from '../exceptions/api/auth/refreshTokenRequiredError';
+import InvalidRefreshTokenError from '../exceptions/api/auth/invalidRefreshTokenError';
 
 const generateTokens = (user: UserDocument) =>
 {
@@ -20,7 +24,7 @@ export const registerUserHandler = catchAsync(async (req: Request<{}, {}, Create
 {
     if (await hasAlreadyRegistered())
     {
-        return next(new ApiError("You have already registered an account", 400));
+        return next(new AccountAlreadyRegisteredError());
     }
 
     const userDocument = await createUser(req.body);
@@ -39,13 +43,13 @@ export const loginUserHandler = catchAsync(async (req: Request<{}, {}, LoginUser
 
     if (!userDocument)
     {
-        return next(new ApiError("Invalid credentials", 401));
+        return next(new InvalidCredentialsError());
     }
 
 
     if (!await isValidPassword(userDocument, req.body.password))
     {
-        return next(new ApiError("Invalid credentials", 401));
+        return next(new InvalidCredentialsError());
     }
 
     const { accessToken, refreshToken } = generateTokens(userDocument);
@@ -61,26 +65,26 @@ export const refreshTokenHandler = catchAsync(async (req: Request<{}, {}, Refres
 
     if (!refreshToken)
     {
-        return next(new ApiError("Refresh Token required", 401));
+        return next(new RefreshTokenRequiredError());
     }
 
     jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET as jwt.Secret, async (err, decoded) =>
     {
         if (err)
         {
-            return next(new ApiError("Invalid Refresh Token", 403));
+            return next(new InvalidRefreshTokenError());
         }
 
         if (typeof decoded !== 'object' || !decoded.id)
         {
-            return next(new ApiError("Invalid Token Data", 400));
+            return next(new InvalidRefreshTokenError());
         }
 
         const userDocument = await getUserById(decoded.id);
 
         if (!userDocument)
         {
-            return next(new ApiError("User not found", 404));
+            return next(new InvalidRefreshTokenError());
         }
 
         const { accessToken, refreshToken: newRefreshToken } = generateTokens(userDocument);

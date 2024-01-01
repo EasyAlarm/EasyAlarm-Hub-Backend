@@ -9,8 +9,9 @@ import profileRouter from './routes/profileRoute';
 import rfidRouter from './routes/rfidRoute';
 import hubRouter from './routes/hubRoute';
 import settingsRouter from './routes/settingsRoute';
-import ApiError from './utils/apiError';
+import ApiError from './exceptions/api/apiError';
 import cors from 'cors';
+import RouteNotFoundError from './exceptions/api/routeNotFoundError';
 
 class App
 {
@@ -56,7 +57,7 @@ class App
 
         this.express.all('*', (req: Request, res: Response, next: NextFunction) =>
         {
-            next(new ApiError(" Route not found", 404));
+            next(new RouteNotFoundError());
         });
     }
 

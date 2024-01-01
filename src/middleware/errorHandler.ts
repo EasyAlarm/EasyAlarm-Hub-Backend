@@ -1,16 +1,20 @@
 import { Request, Response, NextFunction } from 'express';
-import ApiError from '../utils/apiError';
+import ApiError from '../exceptions/api/apiError';
+import InternalServerError from '../exceptions/api/internalServerError';
 
-const errorHandler = (err: ApiError, req: Request, res: Response, next: NextFunction) =>
+const errorHandler = (apiError: ApiError, req: Request, res: Response, next: NextFunction) =>
 {
-    if (err.getStatusCode() === 500)
+    let responseError;
+
+    if (apiError.getStatusCode() === 500)
     {
-        console.log(err);
-        err.message = "Internal Server Error";
+        responseError = new InternalServerError();
     }
 
-    res.status(err.getStatusCode()).json({
-        errors: [err.message]
+    res.status(apiError.getStatusCode()).json({
+        message: apiError.message,
+        statusCode: apiError.getStatusCode(),
+        errorCode: apiError.getErrorCode()
     });
 };
 

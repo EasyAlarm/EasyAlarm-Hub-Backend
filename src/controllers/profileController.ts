@@ -1,9 +1,10 @@
 import { Request, Response, NextFunction } from 'express';
 import { CreateProfileInput, GetProfileInput, UpdateProfileInput } from '../schemas/profileSchema';
 import { createProfile, getProfile, updateProfile } from '../services/profileService';
-import ApiError from '../utils/apiError';
 import { BaseHttpResponse } from '../utils/baseHttpResponse';
 import catchAsync from '../utils/catchAsync';
+import ProfileAlreadyExistsError from '../exceptions/api/profiles/profileAlreadyExists';
+import ProfileDoesNotExist from '../exceptions/api/profiles/profileDoesNotExist';
 
 export const addProfileHandler = catchAsync(async (req: Request<{}, {}, CreateProfileInput['body']>, res: Response, next: NextFunction) =>
 {
@@ -11,7 +12,7 @@ export const addProfileHandler = catchAsync(async (req: Request<{}, {}, CreatePr
 
     if (!profile)
     {
-        return next(new ApiError("Profile already exists", 400));
+        return next(new ProfileAlreadyExistsError());
     }
 
     const response = BaseHttpResponse.successResponse(profile, 201);
@@ -25,7 +26,7 @@ export const getProfileHanlder = catchAsync(async (req: Request<GetProfileInput[
 
     if (!profile)
     {
-        return next(new ApiError("Profile does not exist", 400));
+        return next(new ProfileDoesNotExist());
     }
 
     const response = BaseHttpResponse.successResponse(profile);
@@ -38,7 +39,7 @@ export const updateProfileHandler = catchAsync(async (req: Request<UpdateProfile
 
     if (!profile)
     {
-        return next(new ApiError("Profile does not exist", 400));
+        return next(new ProfileDoesNotExist());
     }
 
     const response = BaseHttpResponse.successResponse(profile);

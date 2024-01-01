@@ -1,23 +1,25 @@
 import { Request, Response, NextFunction } from 'express';
 import { CreateUnitInput, DeleteUnitInput, GetUnitInput, UpdateUnitInput } from '../schemas/unitSchema';
 import { createUnit, getUnit, getAllUnits, deleteUnit, updateUnit } from '../services/unitService';
-import ApiError from '../utils/apiError';
 import { BaseHttpResponse } from '../utils/baseHttpResponse';
 import catchAsync from '../utils/catchAsync';
+import UnitAlreadyExistsError from '../exceptions/api/units/unitAlreadyExistsError';
+import PairingFailedError from '../exceptions/api/units/pairingFailedOrTimedOut';
+import UnitDoesNotExistError from '../exceptions/api/units/unitDoesNotExist';
 
 export const addUnitHandler = catchAsync(async (req: Request<{}, {}, CreateUnitInput['body']>, res: Response, next: NextFunction) =>
 {
 
     if (await getUnit(req.body.deviceID))
     {
-        return next(new ApiError("Unit already exists", 400));
+        return next(new UnitAlreadyExistsError());
     }
 
     const unit = await createUnit(req.body);
 
     if (!unit)
     {
-        return next(new ApiError("Pairing failed or timed out", 400));
+        return next(new PairingFailedError());
     }
 
 
@@ -31,7 +33,7 @@ export const getUnitHandler = catchAsync(async (req: Request<GetUnitInput['param
 
     if (!unit)
     {
-        return next(new ApiError("Unit does not exist", 400));
+        return next(new UnitDoesNotExistError());
     }
 
     const response = BaseHttpResponse.successResponse(unit);
@@ -49,7 +51,7 @@ export const deleteUnitHandler = catchAsync(async (req: Request<DeleteUnitInput[
 {
     if (!await deleteUnit(req.params.deviceID))
     {
-        return next(new ApiError('Unit not found', 400));
+        return next(new UnitDoesNotExistError());
     }
 
     const response = BaseHttpResponse.successMessageResponse('Unit deleted');
@@ -62,7 +64,7 @@ export const updateUnitHandler = catchAsync(async (req: Request<UpdateUnitInput[
 
     if (!unit)
     {
-        return next(new ApiError('Unit not found', 400));
+        return next(new UnitDoesNotExistError());
     }
 
     const response = BaseHttpResponse.successResponse(unit);
