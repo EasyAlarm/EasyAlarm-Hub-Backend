@@ -10,6 +10,7 @@ import rfidRouter from './routes/rfidRoute';
 import hubRouter from './routes/hubRoute';
 import settingsRouter from './routes/settingsRoute';
 import ApiError from './utils/apiError';
+import cors from 'cors';
 
 class App
 {
@@ -38,6 +39,7 @@ class App
     private initalizeMiddleware(): void 
     {
         this.express.use(express.json());
+        this.express.use(cors());
     }
 
     private initializeRouters(): void
