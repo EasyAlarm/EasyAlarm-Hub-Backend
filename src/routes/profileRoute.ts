@@ -13,6 +13,6 @@ router
 router
     .route('/:name')
     .get(validateResource(getProfileSchema), getProfileHanlder)
-    .patch(validateResource(updateProfileSchema), updateProfileHandler);
+    .put(validateResource(updateProfileSchema), updateProfileHandler);
 
 export default router;
