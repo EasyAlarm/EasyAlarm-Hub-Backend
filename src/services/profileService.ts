@@ -1,5 +1,4 @@
-import mongoose from 'mongoose';
-import { DocumentDefinition } from 'mongoose';
+import IProfile from '../hub/types/interfaces/IProfile';
 import { IUnit } from '../hub/types/interfaces/IUnit';
 import ProfileModel, { ProfileDocument } from '../models/profileModel';
 import { getAllUnits } from './unitService';
@@ -27,7 +26,7 @@ export async function getProfile(profileName: string): Promise<ProfileDocument |
 {
     try 
     {
-        return await ProfileModel.findOne({ name: profileName }).populate('unitIDS');
+        return await ProfileModel.findOne({ name: profileName });
     }
     catch (error: any) 
     {
@@ -35,11 +34,18 @@ export async function getProfile(profileName: string): Promise<ProfileDocument |
     }
 }
 
+export async function getProfiles(): Promise<Array<IProfile>>
+{
+    const profileModels = await ProfileModel.find().select('name');
+
+    return profileModels;
+}
+
 export async function doesProfileExist(profileName: string): Promise<boolean>
 {
     try 
     {
-        const doc = await ProfileModel.find({ name: profileName });
+        const doc = await ProfileModel.findOne({ name: profileName });
 
         if (doc)
         {
@@ -60,9 +66,9 @@ export async function updateProfile(profileName: string, profileUnitsIDS: string
     {
         const units = await getAllUnits();
         const unitsIDS: string[] = [];
-        profileUnitsIDS.forEach(deviceID =>
+        profileUnitsIDS.forEach(_id =>
         {
-            const unitModel = units.find((unit: IUnit) => unit.deviceID === deviceID);
+            const unitModel = units.find((unit: IUnit) => unit._id === _id);
 
             if (unitModel)
                 unitsIDS.push(unitModel._id);
