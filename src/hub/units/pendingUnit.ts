@@ -1,6 +1,8 @@
 import { SerialWriter } from "../serial/serialWriter";
 import PayloadType from "../types/enums/payloadType";
 import Unit from "./unit";
+import { ObjectId } from 'mongodb';
+
 
 export default class PendingUnit extends Unit
 {
@@ -14,7 +16,7 @@ export default class PendingUnit extends Unit
         super
             (
                 {
-                    _id: "",
+                    _id: new ObjectId(),
                     deviceID: deviceID,
                     type: "",
                     nodeAddress: "",

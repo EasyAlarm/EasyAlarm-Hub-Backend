@@ -68,13 +68,12 @@ export async function updateProfile(profileName: string, profileUnitsIDS: string
         const unitsIDS: string[] = [];
         profileUnitsIDS.forEach(_id =>
         {
-            const unitModel = units.find((unit: IUnit) => unit._id === _id);
+            const unitModel = units.find((unit: IUnit) => unit._id.equals(_id));
 
             if (unitModel)
-                unitsIDS.push(unitModel._id);
+                unitsIDS.push(unitModel._id.toString());
         });
 
-        console.log(unitsIDS);
         //convert to objectid
         const filter = { name: profileName };
         const update = { unitIDS: unitsIDS };

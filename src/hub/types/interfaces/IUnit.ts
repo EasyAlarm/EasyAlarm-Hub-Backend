@@ -1,6 +1,9 @@
+import { ObjectId } from 'mongodb';
+
+
 export interface IUnit 
 {
-    _id: string;
+    _id: ObjectId;
     deviceID: string;
     type: string;
     nodeAddress: string;

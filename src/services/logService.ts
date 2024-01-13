@@ -85,7 +85,8 @@ export async function getAllLogs()
 {
     try
     {
-        return await LogModel.find();
+        return await LogModel.find().sort({ _id: -1 }).limit(100);
+
     }
     catch (error: any)
     {
