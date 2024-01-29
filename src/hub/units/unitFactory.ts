@@ -21,15 +21,15 @@ export default class UnitFactory
     {
         switch (unitModel.type)
         {
-            case UnitType.DOOR_GUARD:
+            case UnitType.DoorGuard:
                 return new DoorGuard(unitModel, this.serialWriter);
-            case UnitType.KEY_FOB:
+            case UnitType.Keyfob:
                 return new KeyFob(unitModel, this.serialWriter);
-            case UnitType.MOTION_SENSE:
+            case UnitType.MotionSense:
                 return new MotionSense(unitModel, this.serialWriter);
-            case UnitType.SIREN:
+            case UnitType.Siren:
                 return new Siren(unitModel, this.serialWriter);
-            case UnitType.RFID:
+            case UnitType.Rfid:
                 return new Rfid(unitModel, this.serialWriter);
         }
 

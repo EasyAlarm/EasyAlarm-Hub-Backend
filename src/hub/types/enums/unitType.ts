@@ -1,10 +1,10 @@
 enum UnitType 
 {
-    DOOR_GUARD = "DoorGuard",
-    MOTION_SENSE = "MotionSense",
-    SIREN = "Siren",
-    KEY_FOB = "KeyFob",
-    RFID = "Rfid"
+    DoorGuard = "DoorGuard",
+    MotionSense = "MotionSense",
+    Siren = "Siren",
+    Keyfob = "KeyFob",
+    Rfid = "Rfid"
 }
 
 export default UnitType;

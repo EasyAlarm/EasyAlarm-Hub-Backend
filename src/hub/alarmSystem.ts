@@ -1,4 +1,5 @@
-import { createhubStateLog } from "../services/logService";
+import { ActionType, Source } from "../models/logModel";
+import { createLog } from "../services/logService";
 import { getAlarmSettings } from "../services/settingsService";
 import sleep from "../utils/sleep";
 import HubStateType from "./types/enums/hubStateType";
@@ -16,7 +17,7 @@ export default class AlarmSystem
     {
         this.unitManager = unitManager;
 
-        this.hubState = HubStateType.DISARMED;
+        this.hubState = HubStateType.Disarmed;
 
         this.selectedProfile =
         {
@@ -28,7 +29,6 @@ export default class AlarmSystem
     public setState(state: HubStateType): void
     {
         this.hubState = state;
-        createhubStateLog(state);
     }
 
     public getState(): HubStateType
@@ -45,7 +45,7 @@ export default class AlarmSystem
     {
         const alarmSettings = await getAlarmSettings();
 
-        this.setState(HubStateType.ARMING);
+        this.setState(HubStateType.Arming);
 
         const speaker = this.unitManager.getSpeaker();
 
@@ -57,7 +57,7 @@ export default class AlarmSystem
 
             for (let i = 0; i < alarmSettings.armDelay; i++)
             {
-                if (this.hubState === HubStateType.DISARMED)
+                if (this.hubState === HubStateType.Disarmed)
                     return;
 
                 await sleep(1000);
@@ -65,13 +65,13 @@ export default class AlarmSystem
             }
         }
 
-        this.setState(HubStateType.ARMED);
+        this.setState(HubStateType.Armed);
         this.selectedProfile = profile;
     }
 
     public async disarm()
     {
-        this.setState(HubStateType.DISARMED);
+        this.setState(HubStateType.Disarmed);
         this.unitManager.ceaseSirens();
 
         await sleep(200);
@@ -79,16 +79,18 @@ export default class AlarmSystem
         const speaker = this.unitManager.getSpeaker();
 
         speaker?.playMultiTone();
+
+        createLog({ action: ActionType.Disarmed, source: Source.Hub, hubState: this.hubState });
     }
 
     public async alarm()
     {
         const alarmSettings = await getAlarmSettings();
 
-        if (this.hubState === HubStateType.ALARM || this.hubState === HubStateType.TRIGGERED)
+        if (this.hubState === HubStateType.Alarm || this.hubState === HubStateType.Triggered)
             return;
 
-        this.setState(HubStateType.TRIGGERED);
+        this.setState(HubStateType.Triggered);
 
         const speaker = this.unitManager.getSpeaker();
 
@@ -98,7 +100,7 @@ export default class AlarmSystem
 
             for (let i = 0; i < alarmSettings.alarmDelay; i++)
             {
-                if (this.hubState === HubStateType.DISARMED)
+                if (this.hubState === HubStateType.Disarmed)
                 {
                     return;
                 }
@@ -110,14 +112,19 @@ export default class AlarmSystem
             await sleep(200);
         }
 
-        this.setState(HubStateType.ALARM);
+        this.setState(HubStateType.Alarm);
         this.unitManager.fireSirens(this.selectedProfile);
+
+        createLog({ action: ActionType.Armed, source: Source.Hub, hubState: this.hubState });
     }
 
     public async panic()
     {
-        this.setState(HubStateType.ALARM);
+        this.setState(HubStateType.Alarm);
         this.unitManager.fireSirens();
+
+
+        createLog({ action: ActionType.Panicked, source: Source.Hub, hubState: this.hubState });
     }
 
 }

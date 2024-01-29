@@ -1,6 +1,6 @@
 import { IUnit } from "./types/interfaces/IUnit";
 import ProfileModel from "../models/profileModel";
-import { createOfflineUnitLog, createSensorTriggeredLog } from "../services/logService";
+import { createLog } from "../services/logService";
 import { setUnitOnlineStatus } from "../services/unitService";
 import HubStateType from "./types/enums/hubStateType";
 import IHubStatus from "./types/interfaces/IHubStatus";
@@ -20,6 +20,7 @@ import KeyFob from "./units/keyFob";
 import { KeyFobContentType } from "./types/enums/payloadContentTypes";
 import { isValidRfidCard } from "../services/rfidService";
 import Rfid from "./units/rfid";
+import { ActionType } from "../models/logModel";
 
 export default class HubCore
 {
@@ -94,7 +95,7 @@ export default class HubCore
 
         return {
             state: HubStateType[hubState],
-            currentProfile: hubState === HubStateType.ARMED ? currentProfile.name : "None"
+            currentProfile: hubState === HubStateType.Armed ? currentProfile.name : "None"
         };
     }
 
@@ -106,7 +107,7 @@ export default class HubCore
 
             if (unit.online)
             {
-                createOfflineUnitLog(unit);
+                //createOfflineUnitLog(unit);
             }
 
             setUnitOnlineStatus(unit.deviceID, false);
@@ -144,7 +145,7 @@ export default class HubCore
             return;
         }
 
-        if (this.alarmSystem.getState() === HubStateType.DISARMED) 
+        if (this.alarmSystem.getState() === HubStateType.Disarmed) 
         {
             const lockdownProfile = await ProfileModel.findOne({ name: "Lockdown" });
             this.alarmSystem.arm(lockdownProfile);
@@ -158,7 +159,7 @@ export default class HubCore
     private handleTrigger(unit: IUnit): void
     {
 
-        if (this.alarmSystem.getState() !== HubStateType.ARMED)
+        if (this.alarmSystem.getState() !== HubStateType.Armed)
             return;
 
         if (!this.alarmSystem.getCurentProfile().unitIDS.find(u => u.toString() === unit._id.toString()))
@@ -166,7 +167,8 @@ export default class HubCore
             return;
         }
 
-        createSensorTriggeredLog(unit);
+        createLog({ action: ActionType.Triggered, source: unit.type, friendlyName: unit.friendlyName, hubState: this.alarmSystem.getState() });
+
         this.alarmSystem.alarm();
     }
 

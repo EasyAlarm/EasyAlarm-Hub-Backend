@@ -12,11 +12,11 @@ const getUnitType = (deviceID: string): any =>
 
     let dict: { [key: string]: UnitType; } =
     {
-        a: UnitType.DOOR_GUARD,
-        b: UnitType.MOTION_SENSE,
-        c: UnitType.SIREN,
-        d: UnitType.KEY_FOB,
-        e: UnitType.RFID
+        a: UnitType.DoorGuard,
+        b: UnitType.MotionSense,
+        c: UnitType.Siren,
+        d: UnitType.Keyfob,
+        e: UnitType.Rfid
     };
 
     return dict[firstChar];

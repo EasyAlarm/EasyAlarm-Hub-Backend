@@ -1,25 +1,41 @@
 import mongoose from 'mongoose';
+import HubStateType from '../hub/types/enums/hubStateType';
+import UnitType from '../hub/types/enums/unitType';
 
-//enum severity type
-export enum SeverityType
+export enum ActionType
 {
-    INFO,
-    WARNING,
-    DANGER
+    Triggered = "Triggered",
+    Armed = "Armed",
+    Disarmed = "Disarmed",
+    Panicked = "Panicked",
+    LoggedIn = "LoggedIn"
 }
+
+export const Source =
+{
+    ...UnitType,
+    Hub: "Hub",
+    WebApp: "WebApp",
+};
+
+type SourceType = typeof Source[keyof typeof Source];
+
 
 export interface LogDocument extends mongoose.Document
 {
-    date: Date;
-    context: string;
-    severity: SeverityType;
+    action: ActionType,
+    source: SourceType,
+    friendlyName?: string | null;
+    hubState: HubStateType;
 }
 
 const LogSchema = new mongoose.Schema
     ({
-        date: { type: Date, default: Date.now },
-        context: { type: String, required: true },
-        severity: { type: String, required: true }
+        timestamp: { type: Date, default: Date.now },
+        action: { type: String },
+        source: { type: String },
+        friendlyName: { type: String },
+        hubState: { type: String }
     });
 
 const LogModel = mongoose.model('log', LogSchema);

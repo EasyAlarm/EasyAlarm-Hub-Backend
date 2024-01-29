@@ -2,12 +2,13 @@ import { SerialWriter } from "../serial/serialWriter";
 import PayloadType from "../types/enums/payloadType";
 import { IUnit } from "../types/interfaces/IUnit";
 import { ObjectId } from 'mongodb';
+import UnitType from "../types/enums/unitType";
 
 export default abstract class Unit implements IUnit
 {
     _id: ObjectId;
     deviceID: string;
-    type: string;
+    type: UnitType;
     nodeAddress: string;
     friendlyName: string;
     online: boolean;

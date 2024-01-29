@@ -1,10 +1,10 @@
 enum HubStateType 
 {
-    DISARMED,
-    ARMED,
-    ARMING,
-    TRIGGERED,
-    ALARM
+    Disarmed = "Disarmed",
+    Armed = "Armed",
+    Arming = "Arming",
+    Triggered = "Triggered",
+    Alarm = "Alarm"
 }
 
 export default HubStateType;
