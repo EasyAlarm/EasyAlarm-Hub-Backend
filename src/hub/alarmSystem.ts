@@ -43,6 +43,8 @@ export default class AlarmSystem
 
     public async arm(profile: IProfile)
     {
+        createLog({ action: ActionType.Armed, source: Source.Hub, hubState: this.hubState });
+
         const alarmSettings = await getAlarmSettings();
 
         this.setState(HubStateType.Arming);
@@ -67,6 +69,7 @@ export default class AlarmSystem
 
         this.setState(HubStateType.Armed);
         this.selectedProfile = profile;
+
     }
 
     public async disarm()
