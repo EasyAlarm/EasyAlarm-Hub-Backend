@@ -4,7 +4,8 @@ enum UnitType
     MotionSense = "MotionSense",
     Siren = "Siren",
     Keyfob = "KeyFob",
-    Rfid = "Rfid"
+    Rfid = "Rfid",
+    Pending = "Pending"
 }
 
 export default UnitType;
