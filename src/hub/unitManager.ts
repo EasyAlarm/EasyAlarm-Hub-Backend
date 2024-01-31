@@ -4,6 +4,9 @@ import Siren from './units/siren';
 import IProfile from './types/interfaces/IProfile';
 import UnitFactory from './units/unitFactory';
 import { IUnit } from './types/interfaces/IUnit';
+import { createLog } from '../services/logService';
+import { ActionType } from '../models/logModel';
+import HubStateType from './types/enums/hubStateType';
 
 export default class UnitManager
 {
@@ -69,6 +72,8 @@ export default class UnitManager
             {
                 return;
             }
+
+            createLog({ action: ActionType.Triggered, source: siren.type, friendlyName: siren.friendlyName, hubState: HubStateType.Alarm });
 
             siren.startBuzzer();
         });
