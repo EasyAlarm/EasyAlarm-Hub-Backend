@@ -117,17 +117,14 @@ export default class AlarmSystem
 
         this.setState(HubStateType.Alarm);
         this.unitManager.fireSirens(this.selectedProfile);
-
-        createLog({ action: ActionType.Armed, source: Source.Hub, hubState: this.hubState });
     }
 
     public async panic()
     {
+        createLog({ action: ActionType.Panicked, source: Source.Hub, hubState: this.hubState });
+
         this.setState(HubStateType.Alarm);
         this.unitManager.fireSirens();
-
-
-        createLog({ action: ActionType.Panicked, source: Source.Hub, hubState: this.hubState });
     }
 
 }
