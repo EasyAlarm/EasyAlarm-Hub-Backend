@@ -1,5 +1,7 @@
 ## EasyAlarm Hub Backend
 
+Part of the [EasyAlarm](https://github.com/EasyAlarm) project 
+
 Node.js/Express TypeScript API for the EasyAlarm hub. Manages authentication, units, profiles, logs, settings, and communicates with the middleware over a serial connection.
 
 ### Features
